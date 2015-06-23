@@ -1,0 +1,26 @@
+(def () stack-parent (newcoord))
+
+(method (:rcvr stack-parent) pop ()
+  (decf sp)
+  (elt contents cp))
+(method (:rcvr stack-parent) push(x)
+  (setf (elt contents sp) x)
+  (incf sp))
+
+(def () stack (newcoord stack-parent))
+
+(var (:rcvr stack) sp 0)
+(var (:rcvr stack) contents (make-array 100))
+
+(var () stack1 (copy-coord stack))
+
+(method () main ()
+	(print 1)
+  (let ((stack1 (copy-coord stack))
+	(stack2 (copy-coord stack)))
+    (push 100 :rcvr stack1) 
+    (push 200 :rcvr stack2)
+    (print (pop :rcvr stack1))
+    (print (pop :rcvr stack2))))
+
+(main)
