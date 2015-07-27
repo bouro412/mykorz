@@ -1,23 +1,33 @@
 This is the stub README.txt for the "mykorz" project.
 
-Exp := ( 'progn' {Exp} )
+TopExp := ( 'progn' {Exp} )
     | ( 'method' ( Ctxt ) id ( {Prm} ) {Exp} )
     | ( 'var' ( Ctxt ) id Exp? )
     | ( 'def' ( Ctxt ) id Exp )
     | ( 'if' Exp Exp Exp?  )
     | ( 'let' ({(id Exp)}) {Exp})
     | ( 'set' id Exp )
-    | ( 'quote' Exp )
     | ( {Exp} Ctxt )
     | ID
     | immediate value
     ;
+
+Exp := ( 'progn' {Exp} )
+    | ( 'if' Exp Exp Exp?  )
+    | ( 'let' ({(id Exp)}) {Exp})
+    | ( 'set' id Exp )
+    | ( {Exp} Ctxt )
+    | ID
+    | immediate value
+    ;   
+
 Prm := id
     | ( id Exp)
 Ctxt := { Dim Exp }
 Dim := keyword
 id := symbol
 immediate value := number
+	         | string
                  | false
 		 | true
 

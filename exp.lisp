@@ -29,7 +29,7 @@
 
 ;; context-exp -> context
 (defun eval-context-exp-list (exps env ctxt)
-  (letrec ((exps exps) (acc nil))
+  (letrec ((exps exps) (acc cl:nil))
     (if (null exps)
 	(nreverse acc)
 	(rec (cddr exps) 

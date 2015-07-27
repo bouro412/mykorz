@@ -18,7 +18,12 @@
 
 (defclass slot ()
   ((guard :initarg :guard :accessor get-guard)
-   (content :initarg :content :accessor get-content)))
+   (content :initarg :content :accessor get-content)
+   (init-exp :initarg :exp :accessor get-exp)))
+
+
+(defmethod print-object ((s slot) stream)
+  (format stream "slot(~a)" (get-guard s)))
 
 (defun make-slot (&key context selector params content)
   (make-slot% (make-guard context selector params)
@@ -32,17 +37,24 @@
    (selector :initarg :selector :accessor get-selector)
    (params :initarg :params :accessor get-params)))
 
+(defmethod print-object ((g guard) stream)
+  (format stream "ctxt: ~a, selector: ~a, params: ~a"
+	  (get-context g) (get-selector g) (get-params g)))
+
 (defun make-guard (context selector params)
   (make-instance 'guard :context context
 		 :selector selector
 		 :params params))
 
-(defun make-empty-context () nil)
+(defun empty-context () cl:nil)
 
 (defun copy-context (ctxt) (copy-list ctxt))
 
 (defun context-to-list (context)
   context)
+
+(defun list-to-context (list)
+  list)
 
 (defun get-context-by-dim (dim context)
   (assoc dim context))
@@ -79,10 +91,16 @@
    (selector :initarg :selector :accessor get-selector)
    (args :initarg :args :accessor get-args)))
 
+(defmethod print-object ((s slot-call) stream)
+  (format stream "#<slot-call :ctxt ~a :selector ~a :args ~a>" (get-context s) (get-selector s) (get-args s)))
+ 
+
 (defun make-call (context selector args)
   (make-instance 'slot-call :context context
 		 :selector selector
 		 :args args))
+
+(defun empty-args () cl:nil)
 
 (defmacro param-symbol (param)
   `(first ,param))
@@ -130,7 +148,7 @@
   `(setf (cdr (assoc ,dim ,context)) ,value))
 
 (defun add-context (dc context)
-  (append context dc))
+  (cons dc context))
 
 (defun make-dim-and-coord (dim context)
   (if (keywordp dim)

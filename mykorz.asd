@@ -15,7 +15,9 @@
 	       (:file "env")
 	       (:file "exp")
 	       (:file "exp-func")
+	       (:file "primitivef")
+	       (:file "evaluate")
 	       (:file "primitive")
-	       (:file "evaluate"))
+	       (:file "execute"))
   :depends-on (:alexandria :anaphora :decorator))
 

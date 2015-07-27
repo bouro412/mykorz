@@ -1,28 +1,24 @@
 (in-package #:mykorz)
 
-(defun init-env ()
-  (set-primitive-slot))
-
 (defun korz-test (src)
   (init-env)
-  (eval-exp src (empty-env) (make-contexts nil)))
+  (eval-top-exp src (empty-env) (make-contexts cl:nil)))
 
-(defun main (file)
-  (with-open-file (s file)
-    (init-env)
-    (do ((src (read s nil nil) (read s nil nil))
-	 (env (empty-env))
-	 (ctxt (make-contexts nil)))
-	((not src) nil)
-      (eval-exp src env ctxt))))
+(defmacro korz-tests (&rest src)
+  `(progn
+     (init-env)
+     ,@(mapcar (lambda (src)
+		 `(eval-top-exp ',src (empty-env) (empty-context)))
+	       src)))
 
-;;eval-exp
-;;exp = S expression
-;;(exp env ctxt) -> coordinate
-;; *-exp-p : exp -> bool
-;; *-exp : ([exp] env ctxt) -> coordinate
-(defun eval-exp (exp env ctxt)
-  @trace-cond
+(defmacro run-korz (&rest src)
+  `(progn 
+     ,@(mapcar (lambda (src)
+		 `(eval-top-exp ',src (empty-env) 
+				(empty-context)))
+	       src) ))
+
+(defun eval-top-exp (exp env ctxt)
   (cond ((progn-exp-p exp) (eval-exps (progn-exp exp)
 				      env ctxt))
 	((method-exp-p exp)
@@ -51,18 +47,49 @@
 		  (let-body exp)
 		  env ctxt))
 	((set-exp-p exp)
-	 (set-exp (set-id exp)
+	 (set-exp (set-place exp)
 		  (set-value exp)
 		  env ctxt))
-	((quote-exp-p exp)
-	 (quote-exp exp env ctxt))
 	((call-exp-p exp)
 	 (call-exp (call-exp-function exp)
 		   (call-exp-args exp)
 		   (call-exp-context exp)
 		   env ctxt))
 	((id-exp-p exp) (id-exp exp env ctxt))
-	(t (immediate-exp exp))))
+	(cl:t (immediate-exp exp))))
+
+;;eval-exp
+;;exp = S expression
+;;(exp env ctxt) -> coordinate
+;; *-exp-p : exp -> bool
+;; *-exp : ([exp] env ctxt) -> coordinate
+(defun eval-exp (exp env ctxt)
+  (cond ((or (def-exp-p exp)
+	     (var-exp-p exp)
+	     (method-exp-p exp))
+	 (error "slot can't be difined in top level."))
+	((progn-exp-p exp) (eval-exps (progn-exp exp)
+				      env ctxt))
+	((if-exp-p exp)
+	 (if-exp (if-test exp)
+		 (if-then exp)
+		 (if-else exp)
+		 env ctxt))
+	((let-exp-p exp)
+	 (let-exp (let-var exp)
+		  (let-body exp)
+		  env ctxt))
+	((set-exp-p exp)
+	 (set-exp (set-place exp)
+		  (set-value exp)
+		  env ctxt))
+	((call-exp-p exp)
+	 (call-exp (call-exp-function exp)
+		   (call-exp-args exp)
+		   (call-exp-context exp)
+		   env ctxt))
+	((id-exp-p exp) (id-exp exp env ctxt))
+	(cl:t (immediate-exp exp))))
 
 ;;eval-exps : ([exp] env ctxt) -> coordinate
 

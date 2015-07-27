@@ -2,20 +2,20 @@
 
 (defun get-slot (slotcall)
   (let ((slots (get-matched-slots slotcall)))
-    (dolist (s slots)
+    (dolist (s slots slots)
       (dolist (s_dash slots)
 	(if (and (not (equal s s_dash))
 		 (slot<= s s_dash))
 	    (setf slots (remove s_dash slots :test #'equal)))))))
 
 (defun get-var (context selector)
-  (let* ((slotcall (make-call context selector nil))
+  (let* ((slotcall (make-call context selector cl:nil))
 	 (slots (get-slot slotcall)))
     (cond ((< 1 (length slots))
 	   (error "Ambiguous."))
 	  ((= 1 (length slots))
 	   (get-content (car slots)))
-	  (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+	  (cl:t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
 	     (get-context slotcall)
 	     (get-selector slotcall)
 	     (get-args slotcall))))))
@@ -27,7 +27,7 @@
 	   (error "Ambiguous."))
 	  ((= 1 (length slots))
 	   (get-content (car slots)))
-	  (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+	  (cl:t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
 	     (get-context slotcall)
 	     (get-selector slotcall)
 	     (get-args slotcall))))))
@@ -44,13 +44,18 @@
 	   (anaphora:aand
 	    (search-context (get-dim dc)
 			    (get-context slotcall))
-	    (parent-p (get-coord anaphora:it) 
-		    (get-coord dc))))
+	    (parent-p (get-coord anaphora:it)
+		      (get-coord dc))))
 	 (context-to-list (get-context (get-guard slot)))))
+"""
+slot(ctxt: ((RCVR . #<coordinate :parent #<coordinate :parent #<coordinate :parent NIL>>>)), selector: CDR, params: NIL)
+        #<slot-call :ctxt ((RCVR
+                            . #<coordinate :parent #<coordinate :parent #<coordinate :parent NIL>>>)) :selector CAR :args NIL>)
+"""
 
 (defun match-selector (slot slotcall)
-  (eq (get-selector slotcall)
-      (get-selector (get-guard slot))))
+  (eq (make-keyword (get-selector slotcall))
+      (make-keyword (get-selector (get-guard slot)))))
 
 (defun match-params (slot slotcall)
   (let ((params (get-params (get-guard slot)))

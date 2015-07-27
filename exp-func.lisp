@@ -3,23 +3,34 @@
 (defun exp-to-list (exp) exp)
 
 ;; immediate-exp
-(defun immediate-exp (exp) exp)
+(defun immediate-exp (exp)
+  (cond ((and 
+	  (not (typep exp 'double-float))
+	  (or (typep exp 'fixnum)
+	      (typep exp 'float)))
+	 exp)
+	((eq exp *true*)
+	 exp)
+	((eq exp *false*)
+	 exp)
+	((stringp exp) (string-coord exp))
+	(cl:t (error "not exist such a value: ~a~%" exp))))
 
 ;; eval-exps
 (defun rest-exp-p (exp) (not (null (cdr exp))))
 
 ;; id-exp
-(defun id-exp-p (exp) 
+(defun id-exp-p (exp)
   (and (symbolp exp)
        (not (keywordp exp))
-       (not (eq exp t))
-       (not (eq exp nil))))
+       (not (eq exp *true*))
+       (not (eq exp *false*))))
 
 (defun id-exp (sym env ctxt)
   (cond ((has-binding-p env sym) (apply-env env sym))
 	((has-dim-p sym ctxt)
 	 (get-context-val-by-dim-var sym ctxt))
-	(t (get-var ctxt sym))))
+	(cl:t (error "variable ~a is unbound." sym))))
 
 ;; call-exp
 (defun call-exp-p (exp) (consp exp))
@@ -39,13 +50,15 @@
 
 ;; progn-exp
 (defun progn-exp-p (exp)
-  (and (not-id-p exp) (eq (first-exp exp) 'progn)))
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :progn)))
 
 (defun progn-exp (exp) (rest-exp exp))
 
 ;; method-exp
 (defun method-exp-p (exp)
-  (and (not-id-p exp) (eq (first-exp exp) 'method)))
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :method)))
 (defun method-context (exp) (second-exp exp))
 (defun method-id (exp) (third-exp exp))
 (defun method-params (exp) (fourth-exp exp))
@@ -70,7 +83,8 @@
   
 ;; var-exp
 (defun var-exp-p (exp) 
-  (and (not-id-p exp) (eq (first-exp exp) 'var)))
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :var)))
 (defun var-context (exp) (second-exp exp))
 (defun var-id (exp) (third-exp exp))
 (defun var-value (exp) 
@@ -80,41 +94,55 @@
 				   ctxt-exp env ctxt)
 			 :selector (if (id-exp-p name) 
 				       name (error "var name must be symbol"))
-			 :params nil))
-	(value (car value-and-existp))
+			 :params cl:nil))
+	(value-exp (car value-and-existp))
 	(existp (cdr value-and-existp)))
-    (if existp (setf (get-content slot) value))
+    (if existp 
+	(let ((value (eval-exp value-exp env ctxt)))
+	  (setf (get-exp slot) value-exp
+		(get-content slot) (lambda (args ctxt)
+				     (declare (ignore args ctxt))
+				     value))))
     (add-slot slot)))
 
 ;; def-exp
 
 (defun def-exp-p (exp)
-  (and (not-id-p exp) (eq (first-exp exp) 'def)))
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :def)))
 (defun def-context (exp) (second-exp exp))
 (defun def-id (exp) (third-exp exp))
 (defun def-value (exp) (fourth-exp exp))
 (defun def-exp (ctxt-exp id value-exp env ctxt)
-  (add-slot
-   (make-slot :context (create-new-context ctxt-exp env ctxt)
-	      :selector (if (id-exp-p id) 
-			    id (error "var name must be symbol"))
-	      :params nil
-	      :content (eval-exps value-exp env ctxt))))
-  
+  (let ((value (eval-exp value-exp env ctxt)))
+    (add-slot
+     (make-slot :context (create-new-context ctxt-exp env ctxt)
+		:selector (if (id-exp-p id) 
+			      id (error "var name must be symbol"))
+		:params cl:nil
+		:content (lambda (args ctxt) 
+			   (declare (ignore args ctxt))
+			   value)))))
+    
 ;; if-exp
 (defun if-exp-p (exp)
-  (and (not-id-p exp) (eq (first-exp exp) 'if)))
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :if)))
 (defun if-test (exp) (second exp))
 (defun if-then (exp) (third exp))
 (defun if-else (exp) (fourth exp))
 (defun if-exp (test-exp then-exp else-exp env ctxt)
-  (if (not (eq (eval-exp test-exp env ctxt) nil))
-      (eval-exp then-exp env ctxt)
-      (eval-exp else-exp env ctxt)))
+  (cond ((eq (eval-exp test-exp env ctxt) *true*)
+	 (eval-exp then-exp env ctxt))
+	((eq (eval-exp test-exp env ctxt) *false*)
+	 (if (eq else-exp  cl:nil) *false*
+	     (eval-exp else-exp env ctxt)))
+	(cl:t (error "if test value must be true or false."))))
 
 ;; let-exp
 (defun let-exp-p (exp)
-  (and (not-id-p exp) (eq (first-exp exp) 'let)))
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :let)))
 (defun let-var (exp) (second-exp exp))
 (defun let-body (exp) (nth-rest-exp 2 exp))
 (defun let-exp (var-exp body-exp env ctxt)
@@ -130,31 +158,34 @@
 
 ;; set-exp
 (defun set-exp-p (exp)
-  (and (not-id-p exp) (eq (first-exp exp) 'set)))
-(defun set-id (exp)
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :set)))
+(defun set-place (exp)
   (second-exp exp))
 (defun set-value (exp)
   (third-exp exp))
-(defun set-exp (id-exp value-exp env ctxt)
-  (unless (id-exp-p id-exp)
-    (error "set symbol must be a symbol"))
-  (if (has-binding-p env id-exp)
-      (set-env env id-exp)
-      (let* ((slotcall (make-call context selector nil))
-	     (slots (get-slot slotcall)))
+(defun set-exp (place-exp value-exp env ctxt)
+  (if (consp place-exp)
+      (let* ((newctxt (create-new-context 
+		       (exp->context-exp-list place-exp)
+		       env ctxt))
+	     (slots (get-slot 
+		    (make-call  newctxt
+				(first-exp place-exp)
+				(empty-args)))))
 	(cond ((< 1 (length slots))
 	       (error "Ambiguous."))
 	      ((= 1 (length slots))
-	       (setf (get-content (car slot))
-		     (eval-exp value-exp env ctxt)))
-	      (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
-			(get-context slotcall)
-			(get-selector slotcall)
-			(get-args slotcall)))))))
-
-;; quote-exp
-(defun quote-exp-p (exp)
-  (and (not-id-p exp) (eq (first-exp exp) 'quote)))
-(defun quote-exp (exp env ctxt)
-  (declare (ignore env ctxt))
-  exp)
+	       (let ((v (eval-exp value-exp env ctxt)))
+		 (setf (get-content (car slots))
+		       (lambda (args ctxt)
+			 (declare (ignore args ctxt))
+			 v))))
+	      (cl:t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+			   newctxt
+			   (first-exp place-exp)
+			   (empty-args)))))
+      (if (has-binding-p env place-exp)
+	  (set-env env place-exp 
+		   (eval-exp value-exp env ctxt))
+	  (error "variable ~a is unbound." place-exp))))

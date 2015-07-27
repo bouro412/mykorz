@@ -1,3 +1,4 @@
+
 (in-package #:mykorz)
 
 ;; parent relation : (list (child . parent))
@@ -7,7 +8,7 @@
 (defclass coordinate ()
   ((parent :initarg :parent :accessor get-parent)))
 
-(defvar *any* (make-instance 'coordinate :parent nil))
+(defvar *any* (make-instance 'coordinate :parent cl:nil))
 
 ;(defmacro child (relation)
 ;  `(car ,relation))
@@ -22,9 +23,37 @@
 ;  (parent (assoc coord *parent-relation*)))
 
 (defun parent-p (coord1 coord2)
-  (or (eq coord1 coord2)
-      (parent-p (get-parent coord1) coord2)))
+  (and coord1
+       (or (eq coord1 coord2)
+	   (parent-p (get-parent coord1) coord2))))
 
 (defun make-coord (&optional (parent *any*))
   (make-instance `coordinate :parent parent))
+
+(defclass primitive-coordinate (coordinate)
+  ((parent :initform *any*)
+   (value :initarg :value :accessor get-value)))
+
+(defmethod print-object ((coord primitive-coordinate)
+			 stream)
+  (format stream "<coord ~s>" (get-value coord)))
+
+
+;; next
+(defmethod equal-object ((c1 primitive-coordinate)
+			 (c2 primitive-coordinate))
+  )
+
+(defclass string-coordinate (primitive-coordinate)())
+(defvar *string* (make-instance 'string-coordinate
+				:value ""))
+
+(defun string-coord (str)
+  (make-instance 'string-coordinate :parent *string*
+		 :value str))
+
+;;not use yet
+(defclass number-coordinate (primitive-coordinate)()) 
+(defclass bool-coordinate (primitive-coordinate) ())
   
+
