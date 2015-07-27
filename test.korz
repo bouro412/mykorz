@@ -1,0 +1,51 @@
+(def () queue-parent (newcoord))
+(def () queue (newcoord (queue-parent)))
+
+(def () pair-parent (newcoord))
+(def () pair (newcoord (pair-parent)))
+
+(var (:rcvr (pair)) car)
+(var (:rcvr (pair)) cdr)
+
+(method () cons (a b)
+  (let ((p (copy (pair))))
+    (set (car :rcvr p) a)
+    (set (cdr :rcvr p) b)
+    p))
+
+(def (:rcvr (queue)) nil (newcoord))
+(var (:rcvr (queue)) head (nil :rcvr (queue)))
+(var (:rcvr (queue)) last (nil :rcvr (queue)))
+
+(method (:rcvr (queue-parent)) push (x)
+  (let ((new (cons x (nil))))
+    (if (= (last) (nil))
+        (progn (set (head) new)
+	       (set (last) new))
+	(progn (set (cdr :rcvr (last)) new)
+	       (set (last) new)))))
+
+(method (:rcvr (queue-parent)) pop()
+  (let ((obj (car :rcvr (head))))
+    (set (head) (cdr :rcvr (head)))
+    (if (= (nil) (head))
+        (set (last) (nil)))
+    obj))
+
+(method (:rcvr (queue-parent) :debug true) push (x)
+  (print "")
+
+(method () main ()
+  (let ((q (copy (queue))))
+      (push 1 :rcvr q)
+      (push 2 :rcvr q)
+      (push 3 :rcvr q)
+      (push 4 :rcvr q)
+      (print (pop :rcvr q))
+      (print (pop :rcvr q))
+      (print (pop :rcvr q))
+      (print (pop :rcvr q))))
+      
+
+
+(main)
