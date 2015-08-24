@@ -5,13 +5,13 @@
 
 (in-package mykorz-test)
 
-(plan 31)
+(plan 33)
 ;; immidiate test
 (is (korz-test '3) 3)
 (is (korz-test '2.3) 2.3)
 (is (korz-test 'true) 'true)
 (is (korz-test 'false) 'false)
-(is (korz-test '"hello") (string-coord "hello") :test )
+(is (korz-test '"hello") (string-coord "hello") :test #'mykorz::coord=)
 (is-error (korz-test '1/3) 'simple-error)
 (is-error (korz-test '1.d0) 'simple-error)
 (is-error (korz-test '#(1 2 3)) 'simple-error)
@@ -58,6 +58,26 @@
 		   (if (hoge) 60 70))
 		(test :self (child)))
     70)
+
+;;context test
+(is (korz-tests (def () c (newcoord))
+		(def () d (newcoord (c)))
+		(method (:rcvr (c)) func (a)
+			1)
+		(method (:rcvr (d)) func (a)
+			2)
+		(func 1 :rcvr (d)))
+    (korz-test 2))
+
+(is (korz-tests (def () c (newcoord))
+		(def () d (newcoord (c)))
+		(method (:rcvr (c)) func ((a (c)))
+			1)
+		(method (:rcvr (d)) func ((a (c)))
+			3)
+		(func (c) :rcvr (d)))
+    (korz-test 3))
+
 
 
 ;; progn-test

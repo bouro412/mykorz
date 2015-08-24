@@ -63,13 +63,22 @@
 (defun method-id (exp) (third-exp exp))
 (defun method-params (exp) (fourth-exp exp))
 (defun method-body (exp) (nth-rest-exp 4 exp))
+(defun make-params (params env ctxt)
+  (list-to-params
+   (mapcar (lambda (param)
+	     (if (paramp param)
+		 (make-param (param-symbol param)
+			     (eval-exp (param-type param)
+				       env ctxt))
+		 (make-param param))) 
+	   (params-to-list params))))
 
 (defun method-exp (ctxt-exp id-exp params-exp body-exp env ctxt)
   (let ((guard-ctxt (create-new-context ctxt-exp env ctxt))
 	(selector (if (id-exp-p id-exp) 
 		       id-exp
 		      (error "method name must be symbol.")))
-	(params (make-params params-exp)))
+	(params (make-params params-exp env ctxt)))
     (add-slot
      (make-slot :context guard-ctxt
 		:selector selector

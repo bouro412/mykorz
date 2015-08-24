@@ -1,15 +1,27 @@
-1. 構文定義を書こう (DONE)
-2. eval(evals)の変更 
-   if,defなどの組み込みをあそこに書く
-3. dynamic変数を消そう     (とりあえず消した)
-4. 文法依存のコードを書かない (80%)
-各々のデータ構造、アクセス、便利関数をひとつのファイルにまとめて書く
- - slot -> struct (DONE)
- - coord -> struct　親coordを持つ (DONE)
- - emv,contextはグローバルでなく関数間で渡していく
+* Stringを実装しよう
+  * Stringの親Coordinateを作って、全てのStringはこれの子供とする
+  * 「全ての値はCoordinate」の原則をこれまで無視していたので、
+    他の型に関しても同じことをしよう
+	↓
+  * 整数、ブール型をCoordinateを使って実装しよう
+    * こちらも整数、Boolの親Coordinateをつくる必要がある。
+    * 例えば+関数は引数としてnumber-coodinateを２つとるようにする。
+      * OOP的にrcvr軸にnumberを受け取るようにする。
 
- - contextの集合はlistで可?
-  - list化関数をかませる (DONE)
-5. get-slotを実装通りに (DONE)
+(method () + ((a number) (b number))
+	(cl:+ a b ))
 
-+ context.lispはいらない？
+(+ 1 2)
+
+;; 採用
+(method (:rcvr number) + ((a number))
+	(cl:+ rcvr a))
+(+ 2 :rcvr 1)
+
+;;
+(method (:rcvr point) + ((a number))
+	(...))
+
+(method (:error true) + ((a number))
+	(...))
+(+ 2 :rcvr 1 :error true)

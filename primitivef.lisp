@@ -6,7 +6,8 @@
   `(add-slot 
     (make-slot :context (make-contexts cl:nil)
 	       :selector ',name
-	       :params (make-params ',params)
+	       :params (make-params ',params ,(empty-env)
+				    ,(empty-context))
 	       :content 
 	       (lambda (args ,ctxt-var)
  		 (destructuring-bind ,params args

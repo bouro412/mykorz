@@ -85,6 +85,8 @@
 
 (defun params-to-list (params)
   params)
+(defun list-to-params (list)
+  list)
 
 (defclass slot-call ()
   ((context :initarg :context :accessor get-context)
@@ -102,6 +104,10 @@
 
 (defun empty-args () cl:nil)
 
+(defun paramp (param)
+  (and (listp param)
+       (= 2 (length param))))
+
 (defmacro param-symbol (param)
   `(first ,param))
 
@@ -111,13 +117,9 @@
 (defmacro param-type (param)
   `(second ,param))
 
-(defun make-param (param)
-  (if (listp param)
-      param
-      (list param *any*)))
 
-(defun make-params (params)
-  (mapcar #'make-param params))
+(defun make-param (symbol &optional (type *any*))
+  (list symbol type))
 
 ;(defmacro get-ID (sg)
 ;  `(fourth ,sg))

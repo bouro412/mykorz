@@ -40,9 +40,12 @@
 
 
 ;; next
-(defmethod equal-object ((c1 primitive-coordinate)
-			 (c2 primitive-coordinate))
-  )
+(defmethod coord= (c1 c2)
+  (eq c1 c2))
+
+(defmethod coord= ((c1 primitive-coordinate)
+		   (c2 primitive-coordinate))
+  (equal (get-value c1) (get-value c2)))
 
 (defclass string-coordinate (primitive-coordinate)())
 (defvar *string* (make-instance 'string-coordinate
