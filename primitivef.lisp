@@ -16,7 +16,7 @@
 (defun set-primitive-slot () 
   (setf *slot-space* cl:nil)
   (define-primitive print (a) (ctxt)
-    (format cl:t "~a~%" a))
+    (format cl:t "~a~%" (get-value a)))
   (define-primitive newcoord () (ctxt)
     (make-coord *any*))
   (define-primitive newcoord (parent) (ctxt)

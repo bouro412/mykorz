@@ -1,11 +1,24 @@
 (require :prove)
 (require :mykorz)
 (defpackage #:mykorz-test
-  (:use #:cl #:mykorz #:prove))
+  (:use #:cl #:mykorz #:prove)
+  (:shadow is))
 
 (in-package mykorz-test)
+(defmacro is (&body body)
+  `(prove:is ,@body :test #'coord=rval))
+
+(defun coord=rval (coord val)
+  (equal val (mykorz::get-value coord)))
+
+(defun rewrite-func (exp)
+  (case (car exp)
+    ('is (append exp '(:test #'coord=rval)))))
+(defmacro with-rewrite (&body body)
+  `(progn ,@(mapcar #'rewrite-func body)))
 
 (plan 33)
+
 ;; immidiate test
 (is (korz-test '3) 3)
 (is (korz-test '2.3) 2.3)
@@ -67,7 +80,7 @@
 		(method (:rcvr (d)) func (a)
 			2)
 		(func 1 :rcvr (d)))
-    (korz-test 2))
+    2)
 
 (is (korz-tests (def () c (newcoord))
 		(def () d (newcoord (c)))
@@ -76,7 +89,7 @@
 		(method (:rcvr (d)) func ((a (c)))
 			3)
 		(func (c) :rcvr (d)))
-    (korz-test 3))
+    3)
 
 
 

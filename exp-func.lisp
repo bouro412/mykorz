@@ -8,11 +8,11 @@
 	  (not (typep exp 'double-float))
 	  (or (typep exp 'fixnum)
 	      (typep exp 'float)))
-	 exp)
+	 (number-coord exp))
 	((eq exp *true*)
-	 exp)
+	 (bool-coord exp))
 	((eq exp *false*)
-	 exp)
+	 (bool-coord exp))
 	((stringp exp) (string-coord exp))
 	(cl:t (error "not exist such a value: ~a~%" exp))))
 
@@ -141,9 +141,11 @@
 (defun if-then (exp) (third exp))
 (defun if-else (exp) (fourth exp))
 (defun if-exp (test-exp then-exp else-exp env ctxt)
-  (cond ((eq (eval-exp test-exp env ctxt) *true*)
+  (cond ((eq (get-value
+	      (eval-exp test-exp env ctxt)) *true*)
 	 (eval-exp then-exp env ctxt))
-	((eq (eval-exp test-exp env ctxt) *false*)
+	((eq (get-value
+	      (eval-exp test-exp env ctxt)) *false*)
 	 (if (eq else-exp  cl:nil) *false*
 	     (eval-exp else-exp env ctxt)))
 	(cl:t (error "if test value must be true or false."))))
