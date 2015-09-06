@@ -2,9 +2,9 @@
 
 ;;; define primitive slot
 
-(defmacro define-primitive (name params (ctxt-var)  &body body)
+(defmacro define-primitive (context name params (ctxt-var)  &body body)
   `(add-slot 
-    (make-slot :context (make-contexts cl:nil)
+    (make-slot :context (make-contexts (list ,@context))
 	       :selector ',name
 	       :params (make-params ',params ,(empty-env)
 				    ,(empty-context))
@@ -13,15 +13,18 @@
  		 (destructuring-bind ,params args
 		   ,@body)))))
 
-(defun set-primitive-slot () 
+(defun get-rcvr (ctxt)
+  (get-context-val-by-dim-var 'rcvr ctxt))
+
+(defun set-primitive-slot ()
   (setf *slot-space* cl:nil)
-  (define-primitive print (a) (ctxt)
+  (define-primitive () print (a) (ctxt)
     (format cl:t "~a~%" (get-value a)))
-  (define-primitive newcoord () (ctxt)
+  (define-primitive () newcoord () (ctxt)
     (make-coord *any*))
-  (define-primitive newcoord (parent) (ctxt)
+  (define-primitive () newcoord (parent) (ctxt)
     (make-coord parent))
-  (define-primitive copy (coord) (ctxt)
+  (define-primitive () copy (coord) (ctxt)
     (let* ((newcoord (make-coord (get-parent coord)))
 	   (slots (search-slots 
 		   (lambda (slot)
@@ -55,6 +58,28 @@
 		      (get-content old-slot))))))
 	    slots)
       newcoord))
-  (define-primitive = (c1 c2) (ctxt)
-    (if (equal c1 c2) *true* *false*))
-)
+  (define-primitive () = (c1 c2) (ctxt)
+     (bool-coord (if (equal c1 c2) *true* *false*)))
+  (define-primitive (:rcvr *number*) + (a) (ctxt)
+    (number-coord
+     (+ (get-value (get-rcvr ctxt))
+	(get-value a))))
+  (define-primitive (:rcvr *number*) - (a) (ctxt)
+    (number-coord
+     (- (get-value (get-rcvr ctxt))
+	(get-value a))))
+  (define-primitive (:rcvr *number*) * (a) (ctxt)
+    (number-coord
+     (* (get-value (get-rcvr ctxt))
+	(get-value a))))
+  (define-primitive (:rcvr *number*) / (a) (ctxt)
+    (number-coord
+     (float (/ (get-value (get-rcvr ctxt))
+	(get-value a)))))
+  (define-primitive (:rcvr *string*) length () (ctxt)
+    (number-coord 
+     (length (get-value (get-rcvr ctxt)))))
+  (define-primitive (:rcvr *string*) elt (a) (ctxt)
+    (string-coord
+     (string (elt (get-value (get-rcvr ctxt)) (get-value a)))))
+  )

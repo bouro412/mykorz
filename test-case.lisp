@@ -118,5 +118,20 @@
 ; print
 (is-print (korz-test '(print 3)) "3
 ")
+; +
+(is (korz-test '(+ 3 :rcvr 4)) 7)
+(is (korz-tests (def () tkkw 10)
+		(def () pipi 11)
+		(+ (tkkw) :rcvr (pipi)))
+    21)
+
+; 四則演算
+(is (korz-test '(- 10 :rcvr 4)) -6)
+(is (korz-test '(* 10 :rcvr 4)) 40)
+(is (korz-test '(/ 10 :rcvr 4)) 0.4)
+; length
+(is (korz-test '(length :rcvr "tkkw")) 4)
+; elt
 
 (finalize)
+
