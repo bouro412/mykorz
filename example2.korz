@@ -1,0 +1,17 @@
+(def () point-parent (newcoord))
+(def () point (newcoord (point-parent)))
+
+(var (:rcvr (point)) x)
+(var (:rcvr (point)) y)
+(var (:rcvr (point)) color)
+
+(method () make-point (x y c)
+  (let ((p (copy (point))))
+    (set (x :rcvr p) x)
+    (set (y :rcvr p) y)
+    (set (color :rcvr p) c)
+    p))
+
+(method (:rcvr (point-parent) :device)
+	display ()
+	(draw-pixel (x) (y) (color) :rcvr device))

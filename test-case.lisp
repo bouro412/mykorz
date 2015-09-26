@@ -1,7 +1,7 @@
 (require :prove)
 (require :mykorz)
 (defpackage #:mykorz-test
-  (:use #:cl #:mykorz #:prove)
+  (:use #:cl #:mykorz #:prove #:split-sequence)
   (:shadow is))
 
 (in-package mykorz-test)
@@ -17,7 +17,20 @@
 (defmacro with-rewrite (&body body)
   `(progn ,@(mapcar #'rewrite-func body)))
 
-(plan 33)
+(defvar *current-path* (load-time-value
+			(or #.*compile-file-pathname* 
+			    *load-pathname*)))
+(defun file->path (name)
+  (destructuring-bind (name type)
+      (split-sequence #\. name)
+    (make-pathname :defaults *current-path*
+		   :name name :type type)))
+
+(defmacro with-load-korz (file-path &body body)
+  `(progn (main ,file-path)
+	  (mykorz::run-korz ,@body)))
+
+(plan 39)
 
 ;; immidiate test
 (is (korz-test '3) 3)
@@ -39,6 +52,8 @@
 ;; if-test
 (is (korz-test '(if true 1 2)) 1)
 (is (korz-test '(if false 1 2)) 2)
+(is (korz-test '(if false 1)) 'false)
+(is (korz-test '(if (if false 1) 1 2)) 2)
 (is-error (korz-test '(if 3 1 2)) 'simple-error)
 
 ;; slot-test
@@ -118,6 +133,9 @@
 ; print
 (is-print (korz-test '(print 3)) "3
 ")
+; error
+(is-error (korz-test '(error "test")) 'simple-error)
+
 ; +
 (is (korz-test '(+ 3 :rcvr 4)) 7)
 (is (korz-tests (def () tkkw 10)
@@ -129,9 +147,40 @@
 (is (korz-test '(- 10 :rcvr 4)) -6)
 (is (korz-test '(* 10 :rcvr 4)) 40)
 (is (korz-test '(/ 10 :rcvr 4)) 0.4)
+; 比較演算
+(is (korz-test '(< 10 :rcvr 3)) 'true)
+(is (korz-test '(> 10 :rcvr 3)) 'false)
+(is (korz-test '(<= 10 :rcvr 3)) 'true)
+(is (korz-test '(>= 10 :rcvr 3)) 'false)
+(is (korz-test '(< 20 :rcvr 20)) 'false)
+(is (korz-test '(> 20 :rcvr 20)) 'false)
+(is (korz-test '(<= 20 :rcvr 20)) 'true)
+(is (korz-test '(>= 20 :rcvr 20)) 'true)
 ; length
 (is (korz-test '(length :rcvr "tkkw")) 4)
+(is (korz-test '(length :rcvr "")) 0)
 ; elt
+(is (korz-test '(elt 5 :rcvr "kuwakuwa")) "u")
+(is (korz-test '(elt 5 :rcvr "kuwakuwa")) "u")
+(is-error  (korz-test '(elt 8 :rcvr "kuwakuwa")) 
+	   'sb-kernel::index-too-large-error)
+(is-error (korz-test '(elt -1 :rcvr "kuwa"))
+	  'type-error)
+
+; file test
+(is-print (with-load-korz (file->path "example1.korz")
+	    (main))
+	  (format nil "100~%200~%"))
+(is-print (with-load-korz (file->path "example1.korz")
+	    (main :assertions true))
+	  "100~%200~%")
+(is-print (with-load-korz (file->path "example1.korz")
+	    (main :assertions true :multithread true))
+	  (format nil "This is multi thread and enable assertions~%100~%This is multi thread and enable assertions~%200~%"))
+
+(is-print (with-load-korz (file->path "example1.korz")
+	    (main :multithread true))
+	  (format nil "This is multi thread~%100~%This is multi thread~%200~%"))
+
 
 (finalize)
-

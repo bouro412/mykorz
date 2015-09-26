@@ -20,6 +20,8 @@
   (setf *slot-space* cl:nil)
   (define-primitive () print (a) (ctxt)
     (format cl:t "~a~%" (get-value a)))
+  (define-primitive () error (message) (ctxt)
+    (error (get-value message)))
   (define-primitive () newcoord () (ctxt)
     (make-coord *any*))
   (define-primitive () newcoord (parent) (ctxt)
@@ -58,8 +60,11 @@
 		      (get-content old-slot))))))
 	    slots)
       newcoord))
-  (define-primitive () = (c1 c2) (ctxt)
-     (bool-coord (if (equal c1 c2) *true* *false*)))
+  (define-primitive (:rcvr *number*) = (a) (ctxt)
+    (bool-coord 
+     (if (= (get-value (get-rcvr ctxt))
+	    (get-value a))
+	 *true* *false*)))
   (define-primitive (:rcvr *number*) + (a) (ctxt)
     (number-coord
      (+ (get-value (get-rcvr ctxt))
@@ -76,6 +81,22 @@
     (number-coord
      (float (/ (get-value (get-rcvr ctxt))
 	(get-value a)))))
+  (define-primitive (:rcvr *number*) < (a) (ctxt)
+    (bool-coord
+     (if (< (get-value (get-rcvr ctxt)) (get-value a))
+	 *true* *false*)))
+  (define-primitive (:rcvr *number*) > (a) (ctxt)
+    (bool-coord
+     (if (> (get-value (get-rcvr ctxt)) (get-value a))
+	 *true* *false*)))
+  (define-primitive (:rcvr *number*) <= (a) (ctxt)
+    (bool-coord
+     (if (<= (get-value (get-rcvr ctxt)) (get-value a))
+	 *true* *false*)))
+  (define-primitive (:rcvr *number*) >= (a) (ctxt)
+    (bool-coord
+     (if (>= (get-value (get-rcvr ctxt)) (get-value a))
+	 *true* *false*)))
   (define-primitive (:rcvr *string*) length () (ctxt)
     (number-coord 
      (length (get-value (get-rcvr ctxt)))))

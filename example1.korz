@@ -1,26 +1,66 @@
+(def () array-parent (newcoord))
+(def () array (newcoord (array-parent)))
+(var (:rcvr (array)) head)
+(var (:rcvr (array)) tail)
+(def () nil (newcoord))
+
+(method (:rcvr (array-parent)) elt (n)
+  (if (= n :rcvr 0) (head) 
+      (if (< n :rcvr 0) 
+          (elt (- 1 :rcvr n))
+	  (error "too small array index"))))
+
+(method (:rcvr (array-parent)) set-elt (i x)
+  (if (= i :rcvr 0) (set (head) x)
+      (if (< n :rcvr 0)
+          (set-elt (- 1 :rcvr i) x :rcvr (tail))
+	  (error "too small array index"))))
+
+(method (:rcvr (nil)) elt (n)
+  (print "too large index"))
+
+(method (:rcvr (nil)) set-elt (n x)
+  (print "too large index"))
+
+(method () make-array (n)
+  (if (= 0 :rcvr n) (nil)
+      (let ((a (copy (array))))
+        (set (tail :rcvr a) (make-array (- 1 :rcvr n)))
+	a)))
+
 (def () stack-parent (newcoord))
 
-(method (:rcvr stack-parent) pop ()
-  (decf sp)
-  (elt contents cp))
-(method (:rcvr stack-parent) push(x)
-  (setf (elt contents sp) x)
-  (incf sp))
+(method (:rcvr (stack-parent)) pop ()
+  (set (sp) (- 1 :rcvr (sp)))
+  (elt (sp) :rcvr (contents)))
 
-(def () stack (newcoord stack-parent))
+(method (:rcvr (stack-parent)) push(x)
+  (set-elt (sp) x :rcvr (contents))
+  (set (sp) (+ (sp) :rcvr 1)))
 
-(var (:rcvr stack) sp 0)
-(var (:rcvr stack) contents (make-array 100))
+(def () stack (newcoord (stack-parent)))
 
-(var () stack1 (copy-coord stack))
+(var (:rcvr (stack)) sp 0)
+(var (:rcvr (stack)) contents (make-array 100))
 
 (method () main ()
-	(print 1)
-  (let ((stack1 (copy-coord stack))
-	(stack2 (copy-coord stack)))
-    (push 100 :rcvr stack1) 
+  (let ((stack1 (copy (stack)))
+	(stack2 (copy (stack))))
+    (push 100 :rcvr stack1)
     (push 200 :rcvr stack2)
     (print (pop :rcvr stack1))
     (print (pop :rcvr stack2))))
 
-(main)
+(method (:rcvr (stack-parent) :assertions true) pop ()
+	(if (<= 0 :rcvr (sp))
+	    (error "Invariant violated: sp must be > 0")
+	    (pop :assertions false)))
+
+(method (:rcvr (stack-parent) :multithread true) pop ()
+	(print "This is multi thread")
+	(pop :multithread false))
+
+(method (:rcvr (stack-parent) :multithread true
+	 :assertions true) pop ()
+        (print "This is multi thread and enable assertions")
+	(pop :multithread false))

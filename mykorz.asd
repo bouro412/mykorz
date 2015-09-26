@@ -19,5 +19,5 @@
 	       (:file "evaluate")
 	       (:file "primitive")
 	       (:file "execute"))
-  :depends-on (:alexandria :anaphora :decorator))
+  :depends-on (:alexandria :anaphora :decorator :split-sequence))
 

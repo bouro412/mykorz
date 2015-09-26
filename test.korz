@@ -32,8 +32,7 @@
         (set (last) (nil)))
     obj))
 
-(method (:rcvr (queue-parent) :debug true) push (x)
-  (print "")
+	
 
 (method () main ()
   (let ((q (copy (queue))))
@@ -46,6 +45,4 @@
       (print (pop :rcvr q))
       (print (pop :rcvr q))))
       
-
-
 (main)

@@ -9,9 +9,9 @@
 (defun exp->rest-exp-list(exp)
   (cdr exp))
 (defun exp->args-exp-list (exp)
-  (subseq exp 1 (position-if #'keywordp exp)))
+  (subseq exp 1 (position-if #'dimension-p exp)))
 (defun exp->context-exp-list (exp)
-  (let ((pos (position-if #'keywordp exp)))
+  (let ((pos (position-if #'dimension-p exp)))
     (if pos
 	(subseq exp pos))))
 
@@ -30,16 +30,19 @@
 ;; context-exp -> context
 (defun eval-context-exp-list (exps env ctxt)
   (letrec ((exps exps) (acc cl:nil))
-    (if (null exps)
-	(nreverse acc)
-	(rec (cddr exps) 
-	     (cons (eval-exp (second exps) env ctxt)
-		   (cons (first exps)
-			 acc))))))
+    (cond ((null exps) (nreverse acc))
+	  ((or (null (cdr exps))
+	       (dimension-p (second exps)))
+	   (rec (cdr exps) (cons *any*
+				 (cons (first exps) acc))))
+	  (cl:t (rec (cddr exps) 
+		  (cons (eval-exp (second exps) env ctxt)
+			(cons (first exps)
+			      acc)))))))
 
 ;; (ctxt-exp env ctxt) -> ctxt
 (defun create-new-context (ctxt-exp env ctxt)
-  (merge-context (make-contexts 
-		  (eval-context-exp-list 
+  (merge-context (make-contexts
+		  (eval-context-exp-list
 		   ctxt-exp env ctxt))
 		 ctxt))

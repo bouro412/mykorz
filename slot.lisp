@@ -60,7 +60,7 @@
   (assoc dim context))
 
 (defun has-dim-p (sym context)
-  (not (null (assoc (if (keywordp sym) 
+  (not (null (assoc (if (dimension-p sym) 
 			sym
 			(intern (symbol-name sym) "KEYWORD"))
 		    context))))
@@ -152,8 +152,11 @@
 (defun add-context (dc context)
   (cons dc context))
 
+(defun dimension-p (sym)
+  (keywordp sym))
+
 (defun make-dim-and-coord (dim context)
-  (if (keywordp dim)
+  (if (dimension-p dim)
       (cons dim context)
       (error "dimension name must be a keyword")))
 

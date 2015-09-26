@@ -146,7 +146,7 @@
 	 (eval-exp then-exp env ctxt))
 	((eq (get-value
 	      (eval-exp test-exp env ctxt)) *false*)
-	 (if (eq else-exp  cl:nil) *false*
+	 (if (eq else-exp  cl:nil) (bool-coord *false*)
 	     (eval-exp else-exp env ctxt)))
 	(cl:t (error "if test value must be true or false."))))
 
