@@ -61,10 +61,3 @@
 (method (:rcvr (stack-parent) :multithread true) pop ()
 	(print "This is multi thread")
 	(pop :multithread false))
-
-
-(method (:rcvr (stack-parent) :multithread true
-	 :assertions true) pop ()
-        (print "This is multi thread and enable assertions")
-	(pop :multithread false))
-

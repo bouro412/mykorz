@@ -30,7 +30,7 @@
   `(progn (main ,file-path)
 	  (mykorz::run-korz ,@body)))
 
-(plan 39)
+;(plan 60)
 
 ;; immidiate test
 (is (korz-test '3) 3)
@@ -166,21 +166,72 @@
 	   'sb-kernel::index-too-large-error)
 (is-error (korz-test '(elt -1 :rcvr "kuwa"))
 	  'type-error)
+; cat
+(is (korz-test '(cat "kuwa" :rcvr "taka"))
+    "takakuwa")
 
 ; file test
 (is-print (with-load-korz (file->path "example1.korz")
 	    (main))
 	  (format nil "100~%200~%"))
+
 (is-print (with-load-korz (file->path "example1.korz")
 	    (main :assertions true))
-	  "100~%200~%")
-(is-print (with-load-korz (file->path "example1.korz")
-	    (main :assertions true :multithread true))
-	  (format nil "This is multi thread and enable assertions~%100~%This is multi thread and enable assertions~%200~%"))
+	  (format nil "100~%200~%"))
 
 (is-print (with-load-korz (file->path "example1.korz")
 	    (main :multithread true))
 	  (format nil "This is multi thread~%100~%This is multi thread~%200~%"))
 
+(is-print (with-load-korz (file->path "example1.korz")
+	    (main :assertions true :multithread true))
+	  (format nil "This is multi thread and enable assertions~%100~%This is multi thread and enable assertions~%200~%"))
+
+(is-error (with-load-korz (file->path "example1-2.korz")
+	    (main :assertions true :multithread true))
+	  'simple-error "Ambiguous.")
+
+(is-print (with-load-korz (file->path "example2.korz")
+	    (let ((p1 (make-point 10 10 "red"))
+		  (s (copy (screen))))
+	      (display :rcvr p1 :device s)))
+	  (format nil "draw~%10~%10~%red~%draw-complete~%"))
+
+(is-print (with-load-korz (file->path "example2.korz")
+	    (let ((p1 (make-point 10 10 "red"))
+		  (s (copy (screen))))
+	      (display :rcvr p1 :device s 
+		       :is-color-blind true)))
+	  (format nil "draw~%10~%10~%gray-red~%draw-complete~%"))
+
+(is-print (with-load-korz (file->path "example2.korz")
+	    (let ((p1 (make-point 10 10 "red"))
+		  (s (copy (screen))))
+	      (display :rcvr p1 :device s 
+		       :location (australia))))
+	  (format nil "draw~%10~%-10~%red~%draw-complete~%"))
+
+(is-print (with-load-korz (file->path "example2.korz")
+	    (let ((p1 (make-point 10 10 "red"))
+		  (s (copy (screen))))
+	      (display :rcvr p1 :device s 
+		       :location (antarctica))))
+	  (format nil "draw~%20~%-20~%red~%draw-complete~%"))
+
+(is-print (with-load-korz (file->path "example2.korz")
+	    (let ((p1 (make-point 10 10 "red"))
+		  (s (copy (screen))))
+	      (display :rcvr p1 :device s 
+		       :location (antarctica)
+		       :is-color-blind true)))
+	  (format nil "draw~%20~%-20~%gray-red~%draw-complete~%"))
+
+(is-error (with-load-korz (file->path "example2-2.korz")
+	    (let ((p1 (make-point 10 10 "red"))
+		  (s (copy (screen))))
+	      (display :rcvr p1 :device s 
+		       :location (australia)
+		       :is-color-blind true)))
+	  'simple-error)
 
 (finalize)

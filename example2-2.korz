@@ -52,20 +52,3 @@
 (display :rcvr f1 :device s :location (australia)
    	    :is-color-blind true) // false
 |#
-
-(method (:rcvr (screen-parent) :is-color-blind true
-	 :location (southernHemi))
-	 draw-pixel (x y c)
-	 (draw-pixel x y (map-to-gray-scale c)
-	  	     :is-color-blind false))
-
-(method (:rcvr (screen-parent) :location (antarctica))
-	draw-pixel (x y c)
-	(draw-pixel (* x :rcvr 2) (* y :rcvr -2) c
-		    :location false))
-
-#|
-(display :rcvr f1 :device s :location (antarctica))
-(display :rcvr f1 :device s :location (antarctica)
-	 :is-color-blind true)
-|#

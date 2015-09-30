@@ -103,4 +103,17 @@
   (define-primitive (:rcvr *string*) elt (a) (ctxt)
     (string-coord
      (string (elt (get-value (get-rcvr ctxt)) (get-value a)))))
+  (define-primitive (:rcvr *string*) cat (str) (ctxt)
+    (string-coord
+     (concatenate 'string (get-value (get-rcvr ctxt))
+		  (get-value str))))
   )
+
+
+
+
+
+
+
+
+
