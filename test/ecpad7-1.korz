@@ -1,0 +1,29 @@
+(def () cjedit-window-parent (newcoord))
+(def () cjedit-window (newcoord cjedit-window-parent))
+
+(method (:rcvr (cjedit-parent)) on-print ()
+	...)
+(method (:rcvr (cjedit-parent)) on-save ()
+	...)
+(method (:rcvr (cjedit-parent)) on-filenew ()
+	...)
+(method (:rcvr (cjedit-parent)) draw-widgets()
+	...)
+
+
+
+(var (:rcvr (cjedit-window)) layers-of-current-blocks)
+
+(method (:rcvr (cjedit-parent) :user-active-change true) on-print ()
+	( :layers (layers-of-current-blocks) :user-active-change false))
+
+(method (:rcvr (cjedit-parent) :user-active-change true) on-save ()
+	( :layers (layers-of-current-blocks) :user-active-change false))
+
+(method (:rcvr (cjedit-parent) :user-active-change true) on-filenew ()
+	( :layers (layers-of-current-blocks) :user-active-change false))
+
+(method (:rcvr (cjedit-parent) :user-active-change true) draw-widgets()
+	( :layers (layers-of-current-blocks) :user-active-change false))
+
+

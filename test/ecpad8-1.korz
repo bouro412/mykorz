@@ -1,0 +1,21 @@
+(def () person-parent (newcoord))
+(def () person (newcoord (person-parent)))
+
+(var (:rcvr (person)) name)
+(var (:rcvr (person)) address)
+
+(method () person (name addr)
+	(let ((p (copy (person))))
+	  (set (name :rcvr p) name)
+	  (set (address :rcvr p) addr)
+	  p))
+(method (:rcvr (person-parent)) get-address ()
+	(address))
+(method (:rcvr (person-parent)) to-string ()
+	(name))
+(method (:rcvr (person-parent) :address true) to-string ()
+	(cat (address) :rcvr (to-string :address false)))
+
+(method () main ()
+	(let ((p (person "kuwa" "ooo")))
+	  (print (to-string :rcvr p))))

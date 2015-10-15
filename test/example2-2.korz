@@ -1,0 +1,54 @@
+(def () point-parent (newcoord))
+(def () point (newcoord (point-parent)))
+
+(var (:rcvr (point)) x)
+(var (:rcvr (point)) y)
+(var (:rcvr (point)) color)
+
+(method () make-point (x y c)
+  (let ((p (copy (point))))
+    (set (x :rcvr p) x)
+    (set (y :rcvr p) y)
+    (set (color :rcvr p) c)
+    p))
+
+(method (:rcvr (point-parent) :device)
+	display ()
+	(draw-pixel (x) (y) (color) :rcvr device))
+
+(def () screen-parent (newcoord))
+(def () screen (newcoord (screen-parent)))
+
+(method (:rcvr (screen-parent)) draw-pixel (x y color)
+  (print "draw")
+  (print x)
+  (print y)
+  (print color)
+  (print "draw-complete"))
+
+;; (display :rcvr p1 :device s)
+
+(method () map-to-gray-scale (color-str)
+	(cat color-str :rcvr "gray-"))
+
+(method (:rcvr (screen-parent) :is-color-blind true)
+	draw-pixel (x y c)
+	(draw-pixel x y (map-to-gray-scale c)
+ 		:is-color-blind false))
+
+;; (display :rcvr f1 :device s :is-color-blind true)
+
+(def () location-parent (newcoord))
+(def () location (newcoord (location-parent)))
+(def () southernHemi (newcoord (location)))
+(def () australia (newcoord (southernHemi)))
+(def () antarctica (newcoord (southernHemi)))
+
+(method (:rcvr (screen-parent) :location (southernHemi))
+	draw-pixel (x y c)
+	(draw-pixel x (- y :rcvr 0) c :location false))
+#|
+(display :rcvr f1 :device s :location (australia))
+(display :rcvr f1 :device s :location (australia)
+   	    :is-color-blind true) // false
+|#

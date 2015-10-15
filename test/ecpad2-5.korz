@@ -1,0 +1,36 @@
+(method () main ()
+  (let ((b (copy (B))))
+    (y :rcvr b :alpha true)))
+
+(def () A-parent (newcoord))
+(def () A (newcoord (A-parent)))
+
+(method (:rcvr (A-parent)) x (i)
+        (print i))
+
+(method (:rcvr (A-parent) :alpha true) x (i)
+	(print (+ 100 :rcvr i)))
+
+(method (:rcvr (A-parent) :beta true) x (i)
+	(x i :beta false)
+	(print "A.x with beta"))
+
+(def () B-parent (newcoord))
+(def () B (newcoord (B-parent)))
+
+(var (:rcvr (B)) a (copy (A)))
+
+(method (:rcvr (B-parent)) y ()
+  (x 0 :rcvr (a :rcvr rcvr) :beta true))
+
+(method (:rcvr (B-parent)) z ()
+  (x 0 :rcvr (a :rcvr rcvr) :alpha false))
+
+(method (:rcvr (B-parent) :alpha true) y ()
+   (print "B.y with alpha")
+   (y :alpha false))
+
+
+
+
+
