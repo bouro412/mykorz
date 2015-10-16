@@ -1,6 +1,6 @@
 # COPサンプルコードのkorzによる実装
 ## korzで実装が可能なもの
-# 
+1. simple example
 ```java
 import layer Beta;
 
@@ -83,6 +83,65 @@ public class B {
    (y :alpha false))
 
 ```
+
+2. person example
+```java
+public class Person {
+  private String name, address;
+
+  public Person(String name, String addr) {
+    this.name = name;
+    this.address = addr;
+  }
+
+  public String getAddress() {
+    return this.address;
+  }
+
+  public String toString() {
+    return name;
+  }
+
+  layer Address {
+    public String toString() {
+      return proceed() + ", " + getAddress();
+    }
+  }
+}
+
+public class App {
+  void m() {
+    Person p = new Person("Bob");
+    with(new Address()) {
+      System.out.println(p.toString());
+    }
+  }
+}
+```
+```common-lisp
+(def () person-parent (newcoord))
+(def () person (newcoord (person-parent)))
+
+(var (:rcvr (person)) name)
+(var (:rcvr (person)) address)
+
+(method () person (name addr)
+	(let ((p (copy (person))))
+	  (set (name :rcvr p) name)
+	  (set (address :rcvr p) addr)
+	  p))
+(method (:rcvr (person-parent)) get-address ()
+	(address))
+(method (:rcvr (person-parent)) to-string ()
+	(name))
+(method (:rcvr (person-parent) :address true) to-string ()
+	(cat (address) :rcvr (to-string :address false)))
+
+(method () main ()
+	(let ((p (person "kuwa" "ooo")))
+	  (print (to-string :rcvr p))))
+```
+3. 
 ## korzでは実装が困難なもの
 # 
 ```java
