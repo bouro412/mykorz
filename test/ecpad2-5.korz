@@ -29,8 +29,3 @@
 (method (:rcvr (B-parent) :alpha true) y ()
    (print "B.y with alpha")
    (y :alpha false))
-
-
-
-
-
