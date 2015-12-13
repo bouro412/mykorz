@@ -13,12 +13,6 @@
 (defun coord=rval (coord val)
   (equal val (mykorz::get-value coord)))
 
-(defun rewrite-func (exp)
-  (case (car exp)
-    ('is (append exp '(:test #'coord=rval)))))
-(defmacro with-rewrite (&body body)
-  `(progn ,@(mapcar #'rewrite-func body)))
-
 (defvar *current-path* (load-time-value
 			(or #.*compile-file-pathname* 
 			    *load-pathname*)))
@@ -68,6 +62,38 @@
 (is (korz-tests (def (:rcvr 23) brother 40)
 		(brother :rcvr 23))
     40)
+
+;; def-test
+(is (korz-tests (def () A 3)
+		(A))
+    3)
+(is (korz-tests (def () A 10)
+		(set (A) 5)
+		(A))
+    5)
+(is (korz-tests (def () A (newcoord))
+		(def (:rcvr (A)) sub-A 10)
+		(var () b (copy (A)))
+		(sub-A :rcvr (b)))
+    10)
+(is (korz-tests (def () A (newcoord))
+		(def (:rcvr (A)) sub-A 10)
+		(set (sub-A :rcvr (A)) 20)
+		(var () b (copy (A)))
+		(sub-A :rcvr (b)))
+    20)
+(is (korz-tests (def () A (newcoord))
+		(def (:rcvr (A)) sub-A 10)
+		(var () b (copy (A)))
+		(set (sub-A :rcvr (A)) 20)
+		(sub-A :rcvr (b)))
+    10)
+(is (korz-tests (def () A (newcoord))
+		(def (:rcvr (A)) sub-A 10)
+		(var () b (copy (A)))
+		(set (sub-A :rcvr (b)) 20)
+		(sub-A :rcvr (A)))
+    10)
 
 ;; var-test
 (is (korz-tests (def () A (newcoord))

@@ -2,7 +2,7 @@
 
 ;;; define primitive slot
 
-(defmacro define-primitive (context name params (ctxt-var)  &body body)
+(defmacro define-primitive-f (context name params (ctxt-var)  &body body)
   `(add-slot 
     (make-slot :context (make-contexts (list ,@context))
 	       :selector ',name
@@ -13,23 +13,38 @@
  		 (destructuring-bind ,params args
 		   ,@body)))))
 
+(defmacro define-primitive (context name val)
+  `(add-slot 
+    (make-slot :context (make-contexts (list ,@context))
+	       :selector ',name
+	       :params nil
+	       :content (lambda (args ctxt)
+			  (declare (ignore args ctxt))
+			  ,val))))
+
 (defun get-rcvr (ctxt)
   (get-context-val-by-dim-var 'rcvr ctxt))
 
 (defun set-primitive-slot ()
   (setf *slot-space* cl:nil)
-  (define-primitive () print (a) (ctxt)
+  (define-primitive-f () print (a) (ctxt)
     (format cl:t "~a~%" (get-value a))
     a)
-  (define-primitive () eq (a b) (ctxt)
+  (define-primitive-f () princ (a) (ctxt)
+    (format cl:t "~a" (get-value a))
+    a)
+  (define-primitive-f () fresh-line () (ctxt)
+    (format cl:t "~%")
+    false)
+  (define-primitive-f () eq (a b) (ctxt)
     (make-bool-coord (eq a b)))
-  (define-primitive () error (message) (ctxt)
+  (define-primitive-f () error (message) (ctxt)
     (error (get-value message)))
-  (define-primitive () newcoord () (ctxt)
+  (define-primitive-f () newcoord () (ctxt)
     (make-coord *any*))
-  (define-primitive () newcoord (parent) (ctxt)
+  (define-primitive-f () newcoord (parent) (ctxt)
     (make-coord parent))
-  (define-primitive () copy (coord) (ctxt)
+  (define-primitive-f () copy (coord) (ctxt)
     (let* ((newcoord (make-coord (get-parent coord)))
 	   (slots (search-slots 
 		   (lambda (slot)
@@ -63,56 +78,47 @@
 		      (get-content old-slot))))))
 	    slots)
       newcoord))
-  (define-primitive (:rcvr *number*) = (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) = (a) (ctxt)
     (make-bool-coord (= (get-value (get-rcvr ctxt))
 			(get-value a))))
-  (define-primitive (:rcvr *number*) + (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) + (a) (ctxt)
     (number-coord
      (+ (get-value (get-rcvr ctxt))
 	(get-value a))))
-  (define-primitive (:rcvr *number*) - (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) - (a) (ctxt)
     (number-coord
      (- (get-value (get-rcvr ctxt))
 	(get-value a))))
-  (define-primitive (:rcvr *number*) * (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) * (a) (ctxt)
     (number-coord
      (* (get-value (get-rcvr ctxt))
 	(get-value a))))
-  (define-primitive (:rcvr *number*) / (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) / (a) (ctxt)
     (number-coord
      (float (/ (get-value (get-rcvr ctxt))
 	(get-value a)))))
-  (define-primitive (:rcvr *number*) < (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) < (a) (ctxt)
     (make-bool-coord (< (get-value (get-rcvr ctxt)) 
 			(get-value a))))
-  (define-primitive (:rcvr *number*) > (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) > (a) (ctxt)
     (make-bool-coord (> (get-value (get-rcvr ctxt)) 
 			(get-value a))))
-  (define-primitive (:rcvr *number*) <= (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) <= (a) (ctxt)
     (make-bool-coord
      (<= (get-value (get-rcvr ctxt)) (get-value a))))
 
-  (define-primitive (:rcvr *number*) >= (a) (ctxt)
+  (define-primitive-f (:rcvr *number*) >= (a) (ctxt)
     (make-bool-coord
      (>= (get-value (get-rcvr ctxt)) (get-value a))))
 
-  (define-primitive (:rcvr *string*) length () (ctxt)
+  (define-primitive-f (:rcvr *string*) length () (ctxt)
     (number-coord 
      (length (get-value (get-rcvr ctxt)))))
-  (define-primitive (:rcvr *string*) elt (a) (ctxt)
+  (define-primitive-f (:rcvr *string*) elt (a) (ctxt)
     (string-coord
      (string (elt (get-value (get-rcvr ctxt)) (get-value a)))))
-  (define-primitive (:rcvr *string*) cat (str) (ctxt)
+  (define-primitive-f (:rcvr *string*) cat (str) (ctxt)
     (string-coord
      (concatenate 'string (get-value (get-rcvr ctxt))
 		  (get-value str))))
   )
-
-
-
-
-
-
-
-
-

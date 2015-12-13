@@ -8,9 +8,9 @@
 
 (defun make-pairs (list)
   (letrec ((lis list) (acc cl:nil))
-    (if (null lis) 
+    (if (null lis)
 	acc 
-	(rec (cddr lis) 
+	(rec (cddr lis)
 	     (cons (list (car lis) (cadr lis))
 		   acc)))))
 (defmacro while (test &body body)
