@@ -181,9 +181,9 @@
 		       (exp->context-exp-list place-exp)
 		       env ctxt))
 	     (slots (get-slot 
-		    (make-call  newctxt
-				(first-exp place-exp)
-				(empty-args)))))
+		     (make-call  newctxt
+				 (first-exp place-exp)
+				 (empty-args)))))
 	(cond ((< 1 (length slots))
 	       (error "Ambiguous."))
 	      ((= 1 (length slots))

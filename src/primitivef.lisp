@@ -26,7 +26,7 @@
   (get-context-val-by-dim-var 'rcvr ctxt))
 
 (defun set-primitive-slot ()
-  (setf *slot-space* cl:nil)
+  (init-slot-space)
   (define-primitive-f () print (a) (ctxt)
     (format cl:t "~a~%" (get-value a))
     a)

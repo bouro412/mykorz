@@ -37,6 +37,11 @@
    (selector :initarg :selector :accessor get-selector)
    (params :initarg :params :accessor get-params)))
 
+(defmethod initialize-instance :after ((instance guard) &key) 
+  (setf (get-selector instance)
+	(intern (symbol-name (get-selector instance))
+		'mykorz)))
+
 (defmethod print-object ((g guard) stream)
   (format stream "ctxt: ~a, selector: ~a, params: ~a"
 	  (get-context g) (get-selector g) (get-params g)))
@@ -93,6 +98,12 @@
    (selector :initarg :selector :accessor get-selector)
    (args :initarg :args :accessor get-args)))
 
+(defmethod initialize-instance :after ((instance slot-call)
+				       &key)
+  (setf (get-selector instance)
+	(intern (symbol-name (get-selector instance))
+		'mykorz)))
+
 (defmethod print-object ((s slot-call) stream)
   (format stream "#<slot-call :ctxt ~a :selector ~a :args ~a>" (get-context s) (get-selector s) (get-args s)))
  
@@ -101,6 +112,7 @@
   (make-instance 'slot-call :context context
 		 :selector selector
 		 :args args))
+
 
 (defun empty-args () cl:nil)
 
@@ -130,18 +142,36 @@
 (defmacro get-coord (context)
   `(cdr ,context))
 
+(defclass same-selector-slot-space ()
+  ((slots :initform cl:nil :accessor get-slots)
+   (selector :initarg :selector :accessor get-selector)))
+
 (defun add-slot (slot)
-  (pushnew slot *slot-space* :key #'get-guard 
-	   :test (lambda (guard1 guard2)
-		   (and (equal (get-context guard1)
-			       (get-context guard2))
-			(eq (get-selector guard1)
-			    (get-selector guard2))
-			(equal (get-params guard1)
-			       (get-params guard2))))))
+  (let* ((selector (get-selector (get-guard slot)))
+	 (4s (gethash selector *slot-space*)))
+    (if 4s
+	(pushnew slot (get-slots 4s) :key #'get-guard
+		 :test (lambda (guard1 guard2)
+			 (and (equal (get-context guard1)
+				     (get-context guard2))
+			      (equal (get-params guard1)
+				     (get-params guard2)))))
+	(let ((4s (make-instance 'same-selector-slot-space
+				 :selector selector)))
+	  (push slot (get-slots 4s))
+	  (setf (gethash selector *slot-space*) 4s)))))
+
+(defun get-slots-by-selector (selector)
+  (let ((4s (gethash selector *slot-space*)))
+    (if 4s 
+	(get-slots 4s)
+	cl:nil)))
 
 (defun search-slots (func)
-  (remove-if-not func *slot-space*))
+  (remove-if-not func (ss->list)))
+
+(defun search-4s-slots (selector func)
+  (remove-if-not func (get-slots-by-selector selector)))
 
 (defun search-context (dim context)
   (assoc dim context))

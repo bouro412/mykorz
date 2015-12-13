@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:mykorz
-  (:use #:cl  #:alexandria)
+  (:use #:cl  #:alexandria #:iterate)
   (:shadow slot 
 	   t
 	   nil)

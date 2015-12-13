@@ -34,10 +34,10 @@
   
 
 (defun get-matched-slots (slotcall)
-  (search-slots (lambda (slot)
-		  (and (match-context slot slotcall)
-		       (match-selector slot slotcall)
-		       (match-params slot slotcall)))))
+  (search-4s-slots (get-selector slotcall)
+		   (lambda (slot)
+		     (and (match-context slot slotcall)
+			  (match-params slot slotcall)))))
 
 (defun match-context (slot slotcall)
   (every (lambda (dc)

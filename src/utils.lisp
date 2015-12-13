@@ -13,10 +13,6 @@
 	(rec (cddr lis)
 	     (cons (list (car lis) (cadr lis))
 		   acc)))))
-(defmacro while (test &body body)
-  `(do ()
-       ((not ,test) cl:nil)
-     ,body))
 
 (defmacro trace-cond (cond-exp)
   (let ((new-exp (mapcar #'(lambda (exp)

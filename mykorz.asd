@@ -22,5 +22,5 @@
 		 (:file "evaluate")
 		 (:file "primitive")
 		 (:file "execute"))))
-  :depends-on (:alexandria :anaphora :split-sequence))
+  :depends-on (:alexandria :anaphora :split-sequence :iterate))
 

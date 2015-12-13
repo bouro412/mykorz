@@ -26,7 +26,7 @@
   `(progn (main ,file-path)
 	  (mykorz::run-korz ,@body)))
 
-(plan 85)
+(plan 98)
 
 ;; immidiate test
 (is (korz-test '3) 3)
