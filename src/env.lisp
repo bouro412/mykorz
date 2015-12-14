@@ -1,7 +1,7 @@
 (in-package mykorz)
 
 (defun empty-env ()
-  cl:nil)
+  nil)
 
 (defun extend-env (var val env)
   (cons (cons var val) env))

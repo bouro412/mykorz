@@ -8,7 +8,7 @@
 (defclass coordinate ()
   ((parent :initarg :parent :accessor get-parent)))
 
-(defvar *any* (make-instance 'coordinate :parent cl:nil))
+(defvar *any* (make-instance 'coordinate :parent nil))
 
 ;(defmacro child (relation)
 ;  `(car ,relation))
@@ -26,6 +26,9 @@
   (and coord1
        (or (coord= coord1 coord2)
 	   (parent-p (get-parent coord1) coord2))))
+(defun coord< (coord1 coord2)
+  (and (not (coord= coord1 coord2))
+       (parent-p coord2 coord1)))
 
 (defun make-coord (&optional (parent *any*))
   (make-instance `coordinate :parent parent))

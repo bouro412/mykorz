@@ -53,6 +53,7 @@
 
 
 (method (:rcvr (stack-parent) :assertions true) pop ()
+	(print "assertion on pop")
 	(if (<= 0 :rcvr (sp))
 	    (error "Invariant violated: sp must be > 0")
 	    (pop :assertions false)))

@@ -14,7 +14,7 @@
 	((eq exp *false*)
 	 (bool-coord exp))
 	((stringp exp) (string-coord exp))
-	(cl:t (error "not exist such a value: ~a~%" exp))))
+	(t (error "not exist such a value: ~a~%" exp))))
 
 ;; eval-exps
 (defun rest-exp-p (exp) (not (null (cdr exp))))
@@ -30,7 +30,7 @@
   (cond ((has-binding-p env sym) (apply-env env sym))
 	((has-dim-p sym ctxt)
 	 (get-context-val-by-dim-var sym ctxt))
-	(cl:t (error "variable ~a is unbound." sym))))
+	(t (error "variable ~a is unbound." sym))))
 
 ;; call-exp
 (defun call-exp-p (exp) (consp exp))
@@ -42,11 +42,13 @@
 		(mapcar #'(lambda (e)
 			    (eval-exp e env ctxt))
 			args-exp)))
-	 (newctxt (create-new-context ctxt-exp env ctxt))
-	 (fun (if (id-exp-p f-exp)
-		  (get-method newctxt f-exp args)
-		  (eval-exp f-exp ctxt env))))
-    (funcall fun args newctxt)))
+	 (newctxt (create-new-context ctxt-exp env ctxt)))
+    (if (id-exp-p f-exp)
+	(let* ((methods (get-method newctxt f-exp args))
+	       (*call-next-method* (cons (cdr methods)
+					 args)))
+	  (funcall (get-content (car methods)) args newctxt))
+	(funcall (get-content (eval-exp f-exp ctxt env)) args newctxt))))
 
 ;; progn-exp
 (defun progn-exp-p (exp)
@@ -103,7 +105,7 @@
 				   ctxt-exp env ctxt)
 			 :selector (if (id-exp-p name) 
 				       name (error "var name must be symbol"))
-			 :params cl:nil))
+			 :params nil))
 	(value-exp (car value-and-existp))
 	(existp (cdr value-and-existp)))
     (if existp 
@@ -128,7 +130,7 @@
      (make-slot :context (create-new-context ctxt-exp env ctxt)
 		:selector (if (id-exp-p id) 
 			      id (error "var name must be symbol"))
-		:params cl:nil
+		:params nil
 		:content (lambda (args ctxt) 
 			   (declare (ignore args ctxt))
 			   value)))))
@@ -146,9 +148,9 @@
 	 (eval-exp then-exp env ctxt))
 	((eq (get-value
 	      (eval-exp test-exp env ctxt)) *false*)
-	 (if (eq else-exp  cl:nil) (bool-coord *false*)
+	 (if (eq else-exp  nil) (bool-coord *false*)
 	     (eval-exp else-exp env ctxt)))
-	(cl:t (error "if test value must be true or false."))))
+	(t (error "if test value must be true or false."))))
 
 ;; let-exp
 (defun let-exp-p (exp)
@@ -192,7 +194,7 @@
 		       (lambda (args ctxt)
 			 (declare (ignore args ctxt))
 			 v))))
-	      (cl:t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+	      (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
 			   newctxt
 			   (first-exp place-exp)
 			   (empty-args)))))
@@ -200,3 +202,40 @@
 	  (set-env env place-exp 
 		   (eval-exp value-exp env ctxt))
 	  (error "variable ~a is unbound." place-exp))))
+
+; proceed-exp
+(defun proceed-exp-p (exp)
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :proceed)))
+(defun proceed-args (exp)
+  (exp->args-exp-list exp))
+(defun proceed-context (exp)
+  (exp->context-exp-list exp))
+(defun proceed-exp (arg-exp context-exp env ctxt)
+;; ここの実装は後でやり直す
+  (when (null (car *proceed-info*))
+    (error "there is not proceed method"))
+  (if (null arg-exp)
+      (let ((next-slot (caar *proceed-info*))
+	    (*proceed-info* (cons 
+			     (cdr (car *proceed-info*))
+			     (cdr *proceed-info*))))
+	(funcall (get-content next-slot)
+		 (cdr *proceed-info*) ctxt))
+      (let* ((args (list-to-args
+		(mapcar #'(lambda (e)
+			    (eval-exp e env ctxt))
+			arg-exp)))
+	     (newctxt (create-new-context 
+		       context-exp env ctxt))
+	     (next-slot (caar *proceed-info*))
+	     (*proceed-info* (cons 
+			      (cdr (car *proceed-info*))
+			      args)))
+	(funcall (get-content next-slot) args newctxt))))
+
+
+
+
+
+

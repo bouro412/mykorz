@@ -53,7 +53,7 @@
 (is-error (korz-test '(if 3 1 2)) 'simple-error)
 
 ;; slot-test
-(is (korz-tests (def () test 10) (test)) 10)
+(is (korz-tests (def () test 10) (test))  10)
 (is (korz-tests (var () fujichi 20) (fujichi)) 20)
 (is (korz-tests (method () atsushi (x y z) 
 			(if x y z))
@@ -319,6 +319,7 @@
 		       :is-color-blind true)))
 	  "draw~%20~%-20~%gray-red~%draw-complete~%")
 
+
 (is-error (with-load-korz (file->path "example2-2.korz")
 	    (let ((p1 (make-point 10 10 "red"))
 		  (s (copy (screen))))
@@ -353,5 +354,6 @@
 	    (main :address true))
 	  "kuwaooo~%")
 
+;; next collide test
 
 (finalize)

@@ -51,7 +51,7 @@
 		 :selector selector
 		 :params params))
 
-(defun empty-context () cl:nil)
+(defun empty-context () nil)
 
 (defun copy-context (ctxt) (copy-list ctxt))
 
@@ -62,13 +62,20 @@
   list)
 
 (defun get-context-by-dim (dim context)
-  (assoc dim context))
+  (cdr (assoc dim context)))
 
 (defun has-dim-p (sym context)
   (not (null (assoc (if (dimension-p sym) 
 			sym
 			(intern (symbol-name sym) "KEYWORD"))
 		    context))))
+
+(defmacro get-dim (context)
+  `(car ,context))
+
+(defmethod dimension-list ((g guard))
+  (mapcar (lambda (ctxt) (get-dim ctxt)) (get-context g)))
+
 (defun get-context-val-by-dim-var (sym context)
   (cdr (assoc (intern (symbol-name sym) "KEYWORD")
 	      context)))
@@ -114,7 +121,7 @@
 		 :args args))
 
 
-(defun empty-args () cl:nil)
+(defun empty-args () nil)
 
 (defun paramp (param)
   (and (listp param)
@@ -136,14 +143,11 @@
 ;(defmacro get-ID (sg)
 ;  `(fourth ,sg))
 
-(defmacro get-dim (context)
-  `(car ,context))
-
 (defmacro get-coord (context)
   `(cdr ,context))
 
 (defclass same-selector-slot-space ()
-  ((slots :initform cl:nil :accessor get-slots)
+  ((slots :initform nil :accessor get-slots)
    (selector :initarg :selector :accessor get-selector)))
 
 (defun add-slot (slot)
@@ -165,7 +169,7 @@
   (let ((4s (gethash selector *slot-space*)))
     (if 4s 
 	(get-slots 4s)
-	cl:nil)))
+	nil)))
 
 (defun search-slots (func)
   (remove-if-not func (ss->list)))

@@ -2,9 +2,7 @@
 
 (defpackage #:mykorz
   (:use #:cl  #:alexandria #:iterate)
-  (:shadow slot 
-	   t
-	   nil)
+  (:shadow slot)
   (:export
    #:true
    #:false

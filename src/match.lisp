@@ -1,37 +1,47 @@
 (in-package #:mykorz)
 
 (defun get-slot (slotcall)
-  (let ((slots (get-matched-slots slotcall)))
-    (dolist (s slots slots)
-      (dolist (s_dash slots)
-	(if (and (not (equal s s_dash))
-		 (slot<= s s_dash))
-	    (setf slots (remove s_dash slots :test #'equal)))))))
+  (sort (get-matched-slots slotcall) #'new-slot<=))
+    
 
 (defun get-var (context selector)
-  (let* ((slotcall (make-call context selector cl:nil))
+  (let* ((slotcall (make-call context selector nil))
 	 (slots (get-slot slotcall)))
+    (if slots 
+	(get-content (car slots))
+	(error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+	       (get-context slotcall)
+	       (get-selector slotcall)
+	       (get-args slotcall)))))
+#|
     (cond ((< 1 (length slots))
 	   (error "Ambiguous."))
 	  ((= 1 (length slots))
 	   (get-content (car slots)))
-	  (cl:t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+	  (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
 	     (get-context slotcall)
 	     (get-selector slotcall)
 	     (get-args slotcall))))))
+|#
 
 (defun get-method (context selector args)
   (let* ((slotcall (make-call context selector args))
 	 (slots (get-slot slotcall)))
+    (or slots 
+	(error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+	       (get-context slotcall)
+	       (get-selector slotcall)
+	       (get-args slotcall)))))
+#|
     (cond ((< 1 (length slots))
 	   (error "Ambiguous."))
 	  ((= 1 (length slots))
 	   (get-content (car slots)))
-	  (cl:t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
+	  (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
 	     (get-context slotcall)
 	     (get-selector slotcall)
 	     (get-args slotcall))))))
-  
+|#
 
 (defun get-matched-slots (slotcall)
   (search-4s-slots (get-selector slotcall)
@@ -74,6 +84,32 @@ slot(ctxt: ((RCVR . #<coordinate :parent #<coordinate :parent #<coordinate :pare
     (and (context< (get-context sg1) (get-context sg2))
 	 (eq (get-selector sg1) (get-selector sg2))
 	 (params< (get-params sg1) (get-params sg2)))))
+(defun new-slot<= (slot1 slot2)
+  (cond ((new-slot<=% slot1 slot2) t)
+	((new-slot<=% slot2 slot1) nil)
+	(t (error "Ambiguous."))))
+
+(defun new-slot<=% (slot1 slot2)
+  (or (slot<= slot1 slot2)
+      (let* ((sg1 (get-guard slot1))
+	     (sg2 (get-guard slot2))
+	     (dim-list (union (dimension-list sg1)
+			      (dimension-list sg2)))
+	     (dim-pri (remove-if-not 
+		       (lambda (x) (member x dim-list))
+		       *dimention-priority*)))
+	(or (some (lambda (dim)
+		    (let ((coord1 (get-context-by-dim 
+				   dim (get-context sg1)))
+			  (coord2 (get-context-by-dim 
+				   dim (get-context sg2))))
+		      (coord< coord1 coord2)))
+		  dim-pri)
+	    (some (lambda (p1 p2)
+		    (coord< (param-type p1)
+			    (param-type p2)))
+		  (params-to-list (get-params sg1)) 
+		  (params-to-list (get-params sg2)))))))
 
 (defun context< (ctx1 ctx2)
   (or (and (> (context-size ctx1) (context-size ctx2))

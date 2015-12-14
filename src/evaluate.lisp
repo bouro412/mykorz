@@ -2,7 +2,7 @@
 
 (defun korz-test (src)
   (init-env)
-  (eval-top-exp src (empty-env) (make-contexts cl:nil)))
+  (eval-top-exp src (empty-env) (make-contexts nil)))
 
 (defmacro korz-tests (&rest src)
   `(progn
@@ -56,7 +56,7 @@
 		   (call-exp-context exp)
 		   env ctxt))
 	((id-exp-p exp) (id-exp exp env ctxt))
-	(cl:t (immediate-exp exp))))
+	(t (immediate-exp exp))))
 
 ;;eval-exp
 ;;exp = S expression
@@ -89,7 +89,11 @@
 		   (call-exp-context exp)
 		   env ctxt))
 	((id-exp-p exp) (id-exp exp env ctxt))
-	(cl:t (immediate-exp exp))))
+	((proceed-exp-p exp)
+	 (proceed-exp (proceed-args exp)
+		      (proceed-context exp)
+		      env ctxt))
+	(t (immediate-exp exp))))
 
 ;;eval-exps : ([exp] env ctxt) -> coordinate
 
