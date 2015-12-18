@@ -45,7 +45,7 @@
 	 (newctxt (create-new-context ctxt-exp env ctxt)))
     (if (id-exp-p f-exp)
 	(let* ((methods (get-method newctxt f-exp args))
-	       (*call-next-method* (cons (cdr methods)
+	       (*proceed-info* (cons (cdr methods)
 					 args)))
 	  (funcall (get-content (car methods)) args newctxt))
 	(funcall (get-content (eval-exp f-exp ctxt env)) args newctxt))))

@@ -28,7 +28,7 @@
 	   (parent-p (get-parent coord1) coord2))))
 (defun coord< (coord1 coord2)
   (and (not (coord= coord1 coord2))
-       (parent-p coord2 coord1)))
+       (parent-p coord1 coord2)))
 
 (defun make-coord (&optional (parent *any*))
   (make-instance `coordinate :parent parent))

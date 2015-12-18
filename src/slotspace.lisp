@@ -11,3 +11,5 @@
 (defconstant *false* 'false)
 (defparameter *dimention-priority* nil)
 (defvar *proceed-info* (cons nil nil))
+
+(defun sort-dimension (dim-list) dim-list)

@@ -84,31 +84,36 @@ slot(ctxt: ((RCVR . #<coordinate :parent #<coordinate :parent #<coordinate :pare
     (and (context< (get-context sg1) (get-context sg2))
 	 (eq (get-selector sg1) (get-selector sg2))
 	 (params< (get-params sg1) (get-params sg2)))))
+
 (defun new-slot<= (slot1 slot2)
   (cond ((new-slot<=% slot1 slot2) t)
 	((new-slot<=% slot2 slot1) nil)
 	(t (error "Ambiguous."))))
 
 (defun new-slot<=% (slot1 slot2)
+  ;; 軸の優先順位の実装ができてない(*dimention-priority*がnil)
+  ;; デフォルト優先度の軸が役に立たない
+  ;; 優先度を使ってdim-listをsortするほうがいい?
   (or (slot<= slot1 slot2)
       (let* ((sg1 (get-guard slot1))
 	     (sg2 (get-guard slot2))
 	     (dim-list (union (dimension-list sg1)
 			      (dimension-list sg2)))
-	     (dim-pri (remove-if-not 
-		       (lambda (x) (member x dim-list))
-		       *dimention-priority*)))
+	     (dim-pri ;(remove-if-not 
+		      ; (lambda (x) (member x dim-list))
+		      ; *dimention-priority*)))
+	      (sort-dimension dim-list)))
 	(or (some (lambda (dim)
 		    (let ((coord1 (get-context-by-dim 
 				   dim (get-context sg1)))
-			  (coord2 (get-context-by-dim 
+			  (coord2 (get-context-by-dim
 				   dim (get-context sg2))))
 		      (coord< coord1 coord2)))
 		  dim-pri)
 	    (some (lambda (p1 p2)
 		    (coord< (param-type p1)
 			    (param-type p2)))
-		  (params-to-list (get-params sg1)) 
+		  (params-to-list (get-params sg1))
 		  (params-to-list (get-params sg2)))))))
 
 (defun context< (ctx1 ctx2)
