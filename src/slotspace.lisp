@@ -9,7 +9,14 @@
 
 (defconstant *true* 'true)
 (defconstant *false* 'false)
-(defparameter *dimention-priority* nil)
+(defparameter *dimension-priority* (make-hash-table))
 (defvar *proceed-info* (cons nil nil))
 
-(defun sort-dimension (dim-list) dim-list)
+(defun get-dim-pri (dimension)
+  (gethash dimension *dimension-priority* 0))
+
+(defsetf get-dim-pri (dim) (value)
+  `(setf (gethash ,dim *dimension-priority*) ,value))
+
+(defun sort-dimension (dim-list)
+  (sort dim-list #'> :key #'get-dim-pri))

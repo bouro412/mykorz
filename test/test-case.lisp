@@ -263,6 +263,14 @@
 (is (korz-test '(cat "kuwa" :rcvr "taka"))
     "takakuwa")
 
+;;proceed
+(is (korz-tests (method () fn (a)
+				 (+ 1 :rcvr a))
+		(method (:assert true) fn (a)
+			(* 2 :rcvr (proceed)))
+		(fn 10 :assert true)) 
+    22)
+
 ; file test
 (is-print (with-load-korz (file->path "example1.korz")
 	    (main))

@@ -27,6 +27,11 @@
 (defun not-id-p (exp) (consp exp))
 (defun exp-size (exp) (length exp))
 
+(defun predicate-p (sym)
+  (and (symbolp sym)
+       (char= (elt (string sym) 0)
+	      #\@)))
+
 ;; context-exp -> context
 (defun eval-context-exp-list (exps env ctxt)
   (letrec ((exps exps) (acc nil))
@@ -35,7 +40,12 @@
 	       (dimension-p (second exps)))
 	   (rec (cdr exps) (cons *any*
 				 (cons (first exps) acc))))
-	  (t (rec (cddr exps) 
+	  ((predicate-p (second exps))
+	   (rec (cddr exps)
+		(cons (second exps)
+		      (cons (first exps)
+			    acc))))
+	  (t (rec (cddr exps)
 		  (cons (eval-exp (second exps) env ctxt)
 			(cons (first exps)
 			      acc)))))))

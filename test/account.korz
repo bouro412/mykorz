@@ -1,0 +1,50 @@
+#|
+def {} accoutPerson = newCoord;
+def {} account = newCoord extending accountPerson;
+
+setDimensionPriority(encryption, 1);
+
+method {rcvr <= accountPerson , encryption <= true}
+       credit (am){
+    call-next-method(decrypt(am));
+}
+method {rcvr <= accountPerson, encryption <= true}
+       debit (am){
+    cal-next-method(decrypt(am));
+}
+method {rcvr <= accountPerson, encryption <= true}
+       getBalance (am){
+    return encrypt(call-next-method());
+}
+
+method {rcvr <= accountPerson, logging <= true}
+       credit (am){
+    call-next-method();
+    logCredit(rcvr, am);
+}
+method {rcvr <= accountPerson, logging <= true}
+       debit (am){
+    call-next-method();
+    logDebit(rcvr, am);
+}
+method {rcvr <= accountPerson, logging <= true}
+       getBalance (am){
+    var balance = call-next-method();
+    logBalanceRequest(rcve, balance);
+    return balance;
+}
+|#
+
+(def () acp (newcoord))
+(def () ac (newcoord (acp)))
+(set-dimension-priority :encryption 12)
+(set-dimension-priority :logging 14)
+(method (:rcvr (acp)) credit (ac)
+	ac)
+
+(method (:rcvr (acp) :encryption true) credit(ac)
+	(print "enc")
+	(proceed (* 10 :rcvr ac)))
+(method (:rcvr (acp) :logging true) credit(ac)
+	(print "logging")
+	(proceed))

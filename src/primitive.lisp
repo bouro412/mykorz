@@ -1,7 +1,8 @@
 (in-package mykorz)
 
 (defun init-env ()
-  (set-primitive-slot))
+  (set-primitive-slot)
+  (clrhash *dimension-priority*))
 
    
 

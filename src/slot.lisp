@@ -62,7 +62,9 @@
   list)
 
 (defun get-context-by-dim (dim context)
-  (cdr (assoc dim context)))
+  (or (cdr (assoc dim context))
+      *any*))
+
 
 (defun has-dim-p (sym context)
   (not (null (assoc (if (dimension-p sym) 

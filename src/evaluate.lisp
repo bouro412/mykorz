@@ -37,6 +37,15 @@
 	          (def-id exp)
 	          (def-value exp)
 		  env ctxt))
+#|
+	;predicate
+	((predicate-exp-p exp)
+	 (predicate-exp (pre-context exp)
+			(pre-id exp)
+			(pre-params exp)
+			(pre-body exp)
+			env ctxt))
+|#
 	((if-exp-p exp)
 	 (if-exp (if-test exp)
 		 (if-then exp)
@@ -49,6 +58,11 @@
 	((set-exp-p exp)
 	 (set-exp (set-place exp)
 		  (set-value exp)
+		  env ctxt))
+	;; set-dimension-priority
+	((sdp-exp-p exp)
+	 (sdp-exp (sdp-dimension exp)
+		  (sdp-value exp)
 		  env ctxt))
 	((call-exp-p exp)
 	 (call-exp (call-exp-function exp)
@@ -83,6 +97,8 @@
 	 (set-exp (set-place exp)
 		  (set-value exp)
 		  env ctxt))
+
+	
 	((proceed-exp-p exp)
 	 (proceed-exp (proceed-args exp)
 		      (proceed-context exp)

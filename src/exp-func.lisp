@@ -203,6 +203,22 @@
 		   (eval-exp value-exp env ctxt))
 	  (error "variable ~a is unbound." place-exp))))
 
+; set-dimension-priority-exp
+(defun sdp-exp-p (exp)
+  (and (not-id-p exp) (eq (make-keyword
+			   (first-exp exp)) :set-dimension-priority)))
+(defun sdp-dimension (exp)
+  (second-exp exp))
+(defun sdp-value (exp)
+  (third-exp exp))
+(defun sdp-exp (dim-exp val-exp env ctxt)
+  (let ((val (get-value (eval-exp val-exp env ctxt))))
+    (cond ((not (dimension-p dim-exp))
+	   (error "set-dimension-priority must has dimension in first argument."))
+	  ((not (numberp val))
+	   (error "set-dimension-priority must has number in second argument."))
+	  (t (setf (get-dim-pri dim-exp) val)))))
+
 ; proceed-exp
 (defun proceed-exp-p (exp)
   (and (not-id-p exp) (eq (make-keyword
@@ -233,9 +249,18 @@
 			      (cdr (car *proceed-info*))
 			      args)))
 	(funcall (get-content next-slot) args newctxt))))
+#|
+;; predicate
+(defun predicate-exp-p (exp)
+  (and (not-id-p exp)
+       (eq (make-keyword
+	    (first-exp exp)) :predicate)))
 
+(defun pre-context (exp) (second-exp exp))
+(defun pre-id (exp) (third-exp exp))
+(defun pre-params (exp) (fourth-exp exp))
+(defun pre-body (exp) (nth-rest-exp 4 exp))
+(defun predicate-exp (context id params body env ctxt)
+  ())
 
-
-
-
-
+|#

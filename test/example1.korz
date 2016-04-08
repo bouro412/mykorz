@@ -67,4 +67,3 @@
 	 :assertions true) pop ()
         (print "This is multi thread and enable assertions")
 	(pop :multithread false))
-

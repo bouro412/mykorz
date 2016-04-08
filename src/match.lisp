@@ -13,35 +13,15 @@
 	       (get-context slotcall)
 	       (get-selector slotcall)
 	       (get-args slotcall)))))
-#|
-    (cond ((< 1 (length slots))
-	   (error "Ambiguous."))
-	  ((= 1 (length slots))
-	   (get-content (car slots)))
-	  (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
-	     (get-context slotcall)
-	     (get-selector slotcall)
-	     (get-args slotcall))))))
-|#
 
 (defun get-method (context selector args)
   (let* ((slotcall (make-call context selector args))
 	 (slots (get-slot slotcall)))
-    (or slots 
+    (or slots
 	(error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
 	       (get-context slotcall)
 	       (get-selector slotcall)
 	       (get-args slotcall)))))
-#|
-    (cond ((< 1 (length slots))
-	   (error "Ambiguous."))
-	  ((= 1 (length slots))
-	   (get-content (car slots)))
-	  (t (error "A slot call~%  context: ~a~%  selector: ~a~%  args: ~a~%is not unbound." 
-	     (get-context slotcall)
-	     (get-selector slotcall)
-	     (get-args slotcall))))))
-|#
 
 (defun get-matched-slots (slotcall)
   (search-4s-slots (get-selector slotcall)
@@ -54,14 +34,22 @@
 	   (anaphora:aand
 	    (search-context (get-dim dc)
 			    (get-context slotcall))
-	    (parent-p (get-coord anaphora:it)
-		      (get-coord dc))))
+	    (if (symbolp (get-coord dc))
+		(not (coord= (bool-coord *false*)
+			    #|
+			    (eval-exp (list (intern (subseq (string (get-coord dc)) 1))
+					    'rcvr)
+				      (empty-env)
+				      (empty-context))
+			    |#
+			    (call-exp (intern (subseq (string (get-coord dc)) 1))
+				      '(arg) nil (extend-env 'arg (get-coord anaphora:it)
+							     (empty-env))
+				      (empty-context))
+			    ))
+		(parent-p (get-coord anaphora:it)
+			  (get-coord dc)))))
 	 (context-to-list (get-context (get-guard slot)))))
-"""
-slot(ctxt: ((RCVR . #<coordinate :parent #<coordinate :parent #<coordinate :parent NIL>>>)), selector: CDR, params: NIL)
-        #<slot-call :ctxt ((RCVR
-                            . #<coordinate :parent #<coordinate :parent #<coordinate :parent NIL>>>)) :selector CAR :args NIL>)
-"""
 
 (defun match-selector (slot slotcall)
   (eq (make-keyword (get-selector slotcall))
@@ -85,36 +73,50 @@ slot(ctxt: ((RCVR . #<coordinate :parent #<coordinate :parent #<coordinate :pare
 	 (eq (get-selector sg1) (get-selector sg2))
 	 (params< (get-params sg1) (get-params sg2)))))
 
+(defun new-slot<=2 (slot1 slot2)
+  (let* ((sg1 (get-guard slot1))
+	 (sg2 (get-guard slot2))
+	 (dim-list (sort-dimension 
+		    (union (dimension-list sg1)
+			   (dimension-list sg2)))))
+    ()))
+
 (defun new-slot<= (slot1 slot2)
-  (cond ((new-slot<=% slot1 slot2) t)
+  (cond ((slot<= slot1 slot2) t)
+	((slot<= slot2 slot1) nil)
 	((new-slot<=% slot2 slot1) nil)
 	(t (error "Ambiguous."))))
 
 (defun new-slot<=% (slot1 slot2)
-  ;; 軸の優先順位の実装ができてない(*dimention-priority*がnil)
+  ;; 軸の優先順位の実装ができてない(*dimension-priority*がnil)
   ;; デフォルト優先度の軸が役に立たない
   ;; 優先度を使ってdim-listをsortするほうがいい?
-  (or (slot<= slot1 slot2)
-      (let* ((sg1 (get-guard slot1))
+  (or (let* ((sg1 (get-guard slot1))
 	     (sg2 (get-guard slot2))
 	     (dim-list (union (dimension-list sg1)
 			      (dimension-list sg2)))
 	     (dim-pri ;(remove-if-not 
 		      ; (lambda (x) (member x dim-list))
-		      ; *dimention-priority*)))
+		      ; *dimension-priority*)))
 	      (sort-dimension dim-list)))
-	(or (some (lambda (dim)
-		    (let ((coord1 (get-context-by-dim 
-				   dim (get-context sg1)))
-			  (coord2 (get-context-by-dim
-				   dim (get-context sg2))))
-		      (coord< coord1 coord2)))
-		  dim-pri)
-	    (some (lambda (p1 p2)
-		    (coord< (param-type p1)
-			    (param-type p2)))
-		  (params-to-list (get-params sg1))
-		  (params-to-list (get-params sg2)))))))
+	(or 
+	 (some (lambda (i)
+		 (if (or (= (1+ i) (length dim-pri))
+			 (> (get-dim-pri (elt dim-pri i))
+			    (get-dim-pri (elt dim-pri (1+ i)))))
+		     (let* ((dim (elt dim-pri i))
+			    (coord1 (get-context-by-dim 
+				     dim (get-context sg1)))
+			    (coord2 (get-context-by-dim
+				     dim (get-context sg2))))
+		       (coord< coord1 coord2))
+		     (error "Ambigous.")))
+		 (iota (length dim-pri)))
+	 (some (lambda (p1 p2)
+		 (coord< (param-type p1)
+			 (param-type p2)))
+	       (params-to-list (get-params sg1))
+	       (params-to-list (get-params sg2)))))))
 
 (defun context< (ctx1 ctx2)
   (or (and (> (context-size ctx1) (context-size ctx2))
