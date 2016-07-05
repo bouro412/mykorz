@@ -31,23 +31,28 @@
 
 (defun match-context (slot slotcall)
   (every (lambda (dc)
-	   (anaphora:aand
+	   (aand
 	    (search-context (get-dim dc)
 			    (get-context slotcall))
 	    (if (symbolp (get-coord dc))
-		(not (coord= (bool-coord *false*)
-			    #|
-			    (eval-exp (list (intern (subseq (string (get-coord dc)) 1))
-					    'rcvr)
-				      (empty-env)
-				      (empty-context))
-			    |#
-			    (call-exp (intern (subseq (string (get-coord dc)) 1))
-				      '(arg) nil (extend-env 'arg (get-coord anaphora:it)
-							     (empty-env))
-				      (empty-context))
-			    ))
-		(parent-p (get-coord anaphora:it)
+		(not 
+		 (coord=
+		  (make-bool-coord nil)
+		  #|
+		  (eval-exp (list (intern (subseq (string (get-coord dc)) 1))
+		  'rcvr)
+		  (empty-env)
+		  (empty-context))
+		  |#
+		  (call-exp (intern 
+			     (subseq (string (get-coord dc))
+				     1))
+			    '(arg) 
+			    nil 
+			    (extend-env 'arg (get-coord it)
+					(empty-env))
+			    (get-context slotcall))))
+		(parent-p (get-coord it)
 			  (get-coord dc)))))
 	 (context-to-list (get-context (get-guard slot)))))
 
@@ -125,10 +130,10 @@
 		  (context-to-list ctx2)))
       (and (= (context-size ctx1) (context-size ctx2))
 	   (every (lambda (context)
-		    (anaphora:aand 
+		    (aand 
 		     (search-context (get-dim context) ctx2)
 		     (parent-p (get-coord context)
-			       (get-coord anaphora:it))))
+			       (get-coord it))))
 		  (context-to-list ctx1)))))
   
 (defun params< (params1 params2)

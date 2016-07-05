@@ -11,6 +11,14 @@
 		 `(eval-top-exp ',src (empty-env) (empty-context)))
 	       src)))
 
+(defun korz-repl ()
+  (init-env)
+  (loop (princ "> ")
+	(print (eval-top-exp (read) 
+			     (empty-env) 
+			     (make-contexts nil)))
+	(fresh-line)))
+
 (defmacro run-korz (&rest src)
   `(progn 
      ,@(mapcar (lambda (src)

@@ -3,7 +3,7 @@
 ;;; define primitive slot
 
 (defmacro define-primitive-f (context name params (ctxt-var)  &body body)
-  `(add-slot 
+  `(add-slot
     (make-slot :context (make-contexts (list ,@context))
 	       :selector ',name
 	       :params (make-params ',params ,(empty-env)
@@ -97,6 +97,10 @@
     (number-coord
      (float (/ (get-value (get-rcvr ctxt))
 	(get-value a)))))
+  (define-primitive-f (:rcvr *number*) mod (a) (ctxt)
+    (number-coord
+     (mod (get-value (get-rcvr ctxt))
+	(get-value a))))
   (define-primitive-f (:rcvr *number*) < (a) (ctxt)
     (make-bool-coord (< (get-value (get-rcvr ctxt)) 
 			(get-value a))))

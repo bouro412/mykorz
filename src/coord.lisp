@@ -8,6 +8,9 @@
 (defclass coordinate ()
   ((parent :initarg :parent :accessor get-parent)))
 
+(defmethod print-object ((coord coordinate) stream)
+  (format stream "<coord <= ~s>" (get-parent coord)))
+
 (defvar *any* (make-instance 'coordinate :parent nil))
 
 ;(defmacro child (relation)
@@ -39,7 +42,7 @@
 
 (defmethod print-object ((coord primitive-coordinate)
 			 stream)
-  (format stream "<coord ~s>" (get-value coord)))
+  (format stream "~s" (get-value coord)))
 
 
 (defmethod coord= (c1 c2)

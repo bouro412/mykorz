@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:mykorz
-  (:use #:cl  #:alexandria #:iterate)
+  (:use #:cl  #:alexandria #:iterate #:anaphora)
   (:shadow slot)
   (:export
    #:true
@@ -10,5 +10,3 @@
    #:main
    #:korz-test
    #:korz-tests))
-
-
