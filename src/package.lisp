@@ -7,6 +7,6 @@
    #:true
    #:false
    #:string-coord
-   #:main
+   #:run
    #:korz-test
    #:korz-tests))

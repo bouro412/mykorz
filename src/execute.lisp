@@ -1,6 +1,6 @@
 (in-package mykorz)
 
-(defun main (file)
+(defun run (file)
   (with-open-file (s file)
     (init-env)
     (do ((src (read s nil nil) (read s nil nil))
